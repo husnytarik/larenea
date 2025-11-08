@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Larenea | Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="assets/css/main.css" />
+  </head>
+  <body class="admin-body">
+    <!-- GİRİŞ EKRANI -->
+    <div class="admin-wrapper" id="login-view">
+      <div class="admin-card">
+        <div class="admin-logo">
+          <div class="logo-main">Larenea</div>
+          <div class="logo-sub">Yönetici Girişi</div>
+        </div>
+
+        <form id="login-form" class="admin-form">
+          <label class="form-label">
+            E-posta
+            <input type="email" id="login-email" class="form-input" required />
+          </label>
+
+          <label class="form-label">
+            Şifre
+            <input
+              type="password"
+              id="login-password"
+              class="form-input"
+              required
+            />
+          </label>
+
+          <button type="submit" class="btn-primary">Giriş Yap</button>
+
+          <div
+            id="login-error"
+            style="color: #ffb3b3; font-size: 12px; min-height: 16px"
+          ></div>
+        </form>
+
+        <div class="admin-help">
+          Bu sayfa sadece yetkili kullanıcılar içindir. Firebase Authentication
+          panelinden tanımladığın e-posta ve şifre ile giriş yapabilirsin.
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN PANELİ -->
+    <div id="admin-view" style="display: none; min-height: 100vh">
+      <header class="admin-header">
+        <div class="admin-header-left">
+          <div class="logo-main">Larenea Admin</div>
+        </div>
+        <nav class="admin-nav">
+          <span id="admin-user-email" style="opacity: 0.8"></span>
+          <a href="#" id="logout-link">Çıkış</a>
+        </nav>
+      </header>
+
+      <main class="admin-main">
+        <!-- Yeni Haber Ekle -->
+        <section class="admin-section">
+          <h2>Yeni Haber Ekle</h2>
+          <form id="new-news-form" class="admin-form admin-form-grid">
+            <label class="form-label">
+              Başlık
+              <input type="text" id="news-title" class="form-input" required />
+            </label>
+
+            <label class="form-label">
+              Kategori
+              <input
+                type="text"
+                id="news-category"
+                class="form-input"
+                placeholder="Örn: Kazı Günlüğü, Araştırma..."
+              />
+            </label>
+
+            <label class="form-label">
+              Öne Çıkan mı?
+              <select id="news-featured" class="form-input">
+                <option value="false">Hayır</option>
+                <option value="true">Evet</option>
+              </select>
+            </label>
+
+            <label class="form-label form-label-full">
+              Kısa Özet
+              <textarea
+                id="news-summary"
+                class="form-input"
+                rows="2"
+                placeholder="Ana sayfadaki kısa açıklama..."
+              ></textarea>
+            </label>
+
+            <label class="form-label form-label-full">
+              İçerik
+              <textarea
+                id="news-content"
+                class="form-input"
+                rows="6"
+                placeholder="Haber metni..."
+              ></textarea>
+            </label>
+
+            <label class="form-label form-label-full">
+              Görsel Linkleri
+              <textarea
+                id="news-images-urls"
+                class="form-input"
+                rows="2"
+                placeholder="Her satıra bir görsel URL'si yazabilirsin..."
+              ></textarea>
+            </label>              
+            </div>
+
+            <div class="form-label-full">
+              <button type="submit" class="btn-primary">Haberi Kaydet</button>
+              <span
+                id="news-save-status"
+                style="font-size: 12px; margin-left: 8px; opacity: 0.8"
+              ></span>
+            </div>
+          </form>
+        </section>
+
+        <!-- Haber Listesi ve Detay/Edit -->
+        <section class="admin-section">
+          <h2>Haberler</h2>
+          <div
+            style="
+              display: grid;
+              grid-template-columns: minmax(0, 1.4fr) minmax(0, 2fr);
+              gap: 16px;
+              align-items: flex-start;
+            "
+          >
+            <!-- Sol: başlık listesi -->
+            <div>
+              <ul
+                id="news-list"
+                style="
+                  list-style: none;
+                  padding: 0;
+                  margin: 0;
+                  max-height: 420px;
+                  overflow: auto;
+                  font-size: 14px;
+                "
+              >
+                <li style="opacity: 0.7">Haberler yükleniyor...</li>
+              </ul>
+            </div>
+
+            <!-- Sağ: düzenleme formu -->
+            <div
+              id="news-detail"
+              style="
+                font-size: 14px;
+                border-left: 1px solid rgba(255, 255, 255, 0.08);
+                padding-left: 12px;
+                min-height: 80px;
+              "
+            >
+              <p style="opacity: 0.7">
+                Bir habere tıkladığında detayları burada düzenleyebileceksin.
+              </p>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Admin JS -->
+    <script type="module" src="assets/js/admin.js"></script>
+  </body>
+</html>

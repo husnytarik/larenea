@@ -1,5 +1,68 @@
 /* assets/css/main.css */
 
+:root {
+  /* ---------- Temel Arka Planlar ---------- */
+  --color-bg: #f4f5f0;
+  --color-bg-alt: #ffffff;
+  --color-bg-muted: #e4e6dd;
+  --color-bg-dark: #1d221c;
+
+  /* ---------- Ek arka plan efektleri ---------- */
+  --color-bg-radial: rgba(83, 115, 90, 0.14);
+  --color-header-bg: rgba(246, 248, 241, 0.96);
+
+  /* ---------- Metin Renkleri ---------- */
+  --color-text: #222821;
+  --color-text-muted: #525b50;
+  --color-text-soft: #8a9487;
+  --color-text-invert: #f5f7f2;
+  --color-link: #4a6f4f;
+  --color-link-hover: #5f8a63;
+
+  /* ---------- Kenarlıklar ve Gölgeler ---------- */
+  --color-border: rgba(10, 20, 10, 0.07);
+  --color-border-strong: rgba(10, 20, 10, 0.16);
+  --shadow-soft: 0 10px 24px rgba(15, 30, 15, 0.06);
+  --shadow-medium: 0 16px 32px rgba(15, 30, 15, 0.09);
+  --shadow-strong: 0 22px 42px rgba(15, 30, 15, 0.12);
+
+  /* ---------- Vurgu (Accent) Renkleri ---------- */
+  --color-accent: #4a6f4f;
+  --color-accent-dark: #304735;
+  --color-accent-soft: rgba(74, 111, 79, 0.16);
+  --color-accent-contrast: #f5f7f2;
+
+  /* ---------- Banner / Ticker ---------- */
+  --color-ticker-bg: #a2a370;
+  --color-ticker-text: #f9faf6;
+  --color-ticker-border: rgba(15, 30, 15, 0.18);
+  --color-ticker-label-border: rgba(245, 247, 241, 0.55);
+  --color-ticker-label-bg: rgba(0, 0, 0, 0.32);
+
+  /* ---------- Kart Gradientleri ---------- */
+  --color-featured-grad-start: #dce2d6;
+  --color-featured-grad-end: #607a63;
+  --color-news-grad-start: #d1d9cb;
+  --color-news-grad-end: #4f6b52;
+
+  /* ---------- Admin Tema ---------- */
+  --color-admin-bg: #121611;
+  --color-admin-card: #1b221b;
+  --color-admin-border: rgba(255, 255, 255, 0.08);
+  --color-admin-text: #f5f7f2;
+  --color-admin-accent: #7ea57f;
+  --color-admin-accent-hover: #8ebc8e;
+  --color-admin-bg-highlight: rgba(126, 165, 127, 0.14);
+
+  /* ---------- Radyüs ve Ölçüler ---------- */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-pill: 999px;
+}
+
 /* Genel reset hafif */
 *,
 *::before,
@@ -16,37 +79,48 @@ body {
 body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
-  background: #f5f1e8;
-  color: #2b2520;
+  background: radial-gradient(
+      circle at top left,
+      var(--color-bg-radial),
+      transparent 60%
+    ),
+    var(--color-bg);
+  color: var(--color-text);
 }
 
-/* Ana site */
+/* ------------ Ana site ------------ */
 
 .site-header {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  background: #faf4e9;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-header-bg);
+  backdrop-filter: blur(14px);
+  position: sticky;
+  top: 0;
+  z-index: 20;
 }
 
 .top-bar {
   max-width: 1120px;
   margin: 0 auto;
-  padding: 12px 16px;
+  padding: 10px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 24px;
 }
 
+/* Logo – dergi hissi */
 .logo {
   display: flex;
   flex-direction: column;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
 }
 
 .logo-main {
   font-weight: 800;
-  font-size: 20px;
+  font-size: 22px;
+  font-family: "Georgia", "Times New Roman", serif;
 }
 
 .logo-sub {
@@ -54,50 +128,65 @@ body {
   text-transform: none;
   letter-spacing: 0.12em;
   opacity: 0.8;
+  color: var(--color-text-soft);
 }
+
+/* Menü */
 
 .main-nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  font-size: 14px;
+  gap: 10px;
+  font-size: 13px;
 }
 
 .main-nav a {
   text-decoration: none;
-  color: #4a3c2e;
-  padding: 6px 10px;
-  border-radius: 999px;
+  color: var(--color-text-muted);
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
   border: 1px solid transparent;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 500;
+  font-size: 11px;
 }
 
 .main-nav a:hover {
-  border-color: rgba(0, 0, 0, 0.12);
-  background: rgba(0, 0, 0, 0.02);
+  border-color: var(--color-border);
+  background: var(--color-bg-muted);
+  color: var(--color-text);
 }
 
-/* Kayan yazı */
+.main-nav a.active {
+  background: var(--color-accent-soft);
+  color: var(--color-accent-dark);
+  border-color: var(--color-border-strong);
+}
+
+/* ------------ Kayan yazı ------------ */
 
 .news-ticker {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-  background: #3e2e22;
-  color: #fdfaf5;
+  gap: 10px;
+  padding: 6px 16px;
+  border-top: 1px solid var(--color-ticker-border);
+  border-bottom: 1px solid var(--color-ticker-border);
+  background: var(--color-ticker-bg);
+  color: var(--color-ticker-text);
 }
 
 .news-ticker .ticker-label {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.16em;
-  padding: 2px 8px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-ticker-label-border);
   white-space: nowrap;
+  background: var(--color-ticker-label-bg);
 }
 
 .news-ticker .ticker-track {
@@ -109,6 +198,23 @@ body {
   display: inline-block;
   white-space: nowrap;
   animation: ticker-scroll 25s linear infinite;
+  font-size: 13px;
+}
+
+.ticker-items a {
+  color: inherit;
+  text-decoration: none;
+  opacity: 0.9;
+}
+
+.ticker-items a + a::before {
+  content: " • ";
+  opacity: 0.6;
+  padding: 0 8px;
+}
+
+.ticker-items a:hover {
+  text-decoration: underline;
 }
 
 @keyframes ticker-scroll {
@@ -120,11 +226,11 @@ body {
   }
 }
 
-/* Ana içerik düzeni */
+/* ------------ Ana içerik düzeni ------------ */
 
 .site-main {
   max-width: 1120px;
-  margin: 16px auto 32px;
+  margin: 18px auto 34px;
   padding: 0 16px;
 }
 
@@ -132,85 +238,89 @@ body {
   display: grid;
   grid-template-columns: minmax(0, 2.1fr) minmax(0, 1.2fr);
   grid-template-rows: auto auto;
-  gap: 16px;
+  gap: 18px;
 }
 
+/* ------------ Kartlar ------------ */
+
 .card {
-  background: #fdfaf5;
-  border-radius: 8px;
-  padding: 16px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: var(--color-bg-alt);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px 18px;
+  border: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
   gap: 8px;
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
 }
+
+/* Manşet kart */
 
 .card-featured {
   grid-column: 1;
   grid-row: 1 / span 1;
   min-height: 260px;
+  position: relative;
+  overflow: hidden;
 }
+
+/* Manşet placeholder gradient (haber yoksa) */
+.card-featured::before {
+  content: "";
+  display: block;
+  height: 160px;
+  margin: -16px -18px 12px;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  background: linear-gradient(
+    135deg,
+    var(--color-featured-grad-start),
+    var(--color-featured-grad-end)
+  );
+}
+
+/* Manşet gerçek görsel aldıysa gradient'i kapat */
+.card-featured.has-media::before {
+  display: none;
+}
+
+/* Ortak medya alanı */
+.card-media {
+  margin: 0 0 12px;
+  overflow: hidden;
+  background: transparent;
+}
+
+/* Manşet medyası: üst ve yanlardan full-bleed */
+.card-featured .card-media {
+  margin: -16px -18px 12px;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.card-media img {
+  width: 100%;
+  height: 260px;
+  object-fit: cover;
+  display: block;
+}
+
+/* Manşet içindeki metinler için tekrar padding verelim */
+.card-featured > .card-tag,
+.card-featured > .card-title,
+.card-featured > .card-meta,
+.card-featured > .card-text,
+.card-featured > .card-link {
+  padding: 0 18px;
+}
+
+.card-featured > .card-tag {
+  margin-top: 14px;
+}
+
+/* Diğer büyük kart */
 
 .card-medium {
   grid-column: 1;
-}
-
-.sidebar {
-  grid-column: 2;
-  grid-row: 1 / span 2;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.card-small {
-  padding: 12px 14px;
-}
-
-.card-tag {
-  display: inline-block;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: #efe0c6;
-  color: #4e3622;
-}
-
-.card-title {
-  margin: 0;
-  font-size: 18px;
-  line-height: 1.25;
-}
-
-.card-featured .card-title {
-  font-size: 22px;
-}
-
-.card-meta {
-  font-size: 12px;
-  opacity: 0.7;
-}
-
-.card-text {
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.card-link {
-  margin-top: auto;
-  align-self: flex-start;
-  font-size: 13px;
-  text-decoration: none;
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(0, 0, 0, 0.16);
-  color: #4a341f;
-}
-
-.card-link:hover {
-  background: rgba(0, 0, 0, 0.04);
 }
 
 /* Küçük haber grid’i */
@@ -222,22 +332,198 @@ body {
   gap: 12px;
 }
 
+/* Daha “dergi” hissi için küçük kart grid’i */
+.news-grid-small {
+  grid-column: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  grid-auto-flow: dense; /* boşlukları sıkı doldur, mozaik görünüm */
+}
+
+/* ---------- Varyantlar ---------- */
+
+/* 2 sütuna yayılan geniş kart */
+.news-grid-small .card-small--wide {
+  grid-column: span 2;
+}
+
+/* Daha uzun kart – görsel ve kart yüksekliği artar */
+.news-grid-small .card-small--tall {
+  min-height: 280px;
+}
+
+/* Tall kartlarda görseli biraz daha yüksek yap */
+.news-grid-small .card-small--tall .card-media img,
+.news-grid-small .card-small--tall .card-media.slider .slides {
+  height: 240px;
+}
+
+/* Vurgulu kart – hafif arkaplan ve sınır tonu */
+.news-grid-small .card-small--highlight {
+  background: radial-gradient(
+    circle at top left,
+    var(--color-bg-radial),
+    var(--color-bg-alt)
+  );
+  border-color: rgba(74, 111, 79, 0.35);
+}
+
+/* Daha kompakt kart – özet yok, daha yoğun grid */
+.news-grid-small .card-small--compact .card-text {
+  display: none;
+}
+
+.news-grid-small .card-small--compact .card-title {
+  font-size: 16px;
+}
+
+/* Küçük ekranlarda 2 sütun span’leri tek sütuna indir */
+@media (max-width: 768px) {
+  .news-grid-small .card-small--wide {
+    grid-column: span 1;
+  }
+}
+
+.news-grid-small .card {
+  position: relative;
+  padding-top: 12px;
+}
+
+/* Küçük kartta gerçek görsel varsa:
+   - üst padding’i kaldır
+   - placeholder gradient’i gizle
+   - görseli kartın üst ve yanlarına kadar yay */
+.news-grid-small .card.has-media {
+  padding-top: 0;
+}
+
+.news-grid-small .card.has-media::before {
+  display: none;
+}
+
+/* Görsel alanı (varsayılan) */
+.news-grid-small .card-media {
+  margin: 0 0 10px;
+  overflow: hidden;
+}
+
+/* Görsel varsa kartın içine full-bleed otursun */
+.news-grid-small .card.has-media .card-media {
+  margin: -16px -18px 12px; /* kart padding’ini yok say */
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+/* Küçük haber kartlarındaki img */
+.news-grid-small .card-media img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+}
+
+/* Küçük kart placeholder gradient (görsel yoksa) */
+.news-grid-small .card::before {
+  content: "";
+  display: block;
+  height: 96px;
+  margin: -4px -18px 10px;
+  border-radius: 14px 14px 0 0;
+  background: linear-gradient(
+    135deg,
+    var(--color-news-grad-start),
+    var(--color-news-grad-end)
+  );
+}
+
+/* ------------ Kart tipografi ------------ */
+
+.card-tag {
+  display: inline-block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-soft);
+  color: var(--color-accent-dark);
+  font-weight: 700;
+}
+
+.card-title {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.3;
+  font-family: "Georgia", "Times New Roman", serif;
+}
+
+.card-meta {
+  font-size: 12px;
+  color: var(--color-text-soft);
+}
+
+.card-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-text-muted);
+}
+
+/* “Devamını oku” buton hissi */
+
+.card-link {
+  margin-top: auto;
+  align-self: flex-start;
+  font-size: 13px;
+  text-decoration: none;
+  padding: 7px 12px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-text);
+  background: var(--color-bg-muted);
+  transition: background 0.15s ease, transform 0.08s ease, box-shadow 0.15s ease;
+}
+
+.card-link:hover {
+  background: var(--color-admin-accent);
+  box-shadow: var(--shadow-medium);
+  transform: translateY(-1px);
+}
+
 /* Sidebar */
 
+.sidebar {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card-small {
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+}
+
+/* ------------ Sidebar blokları ------------ */
+
 .sidebar-block {
-  background: #fdfaf5;
-  border-radius: 8px;
-  padding: 14px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: var(--color-bg-alt);
+  border-radius: var(--radius-lg);
+  padding: 14px 14px 16px;
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-soft);
 }
 
 .sidebar-title {
   margin: 0 0 8px;
-  font-size: 15px;
+  font-size: 14px;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.16em;
   font-weight: 700;
+  color: var(--color-text-muted);
 }
+
+/* Etkinlik listesi – tarih kutusu poster gibi */
 
 .event-list {
   list-style: none;
@@ -250,7 +536,7 @@ body {
 
 .event-list li {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   font-size: 13px;
 }
 
@@ -258,17 +544,20 @@ body {
   min-width: 64px;
   text-align: center;
   font-weight: 700;
-  background: #3e2e22;
-  color: #fdfaf5;
-  border-radius: 6px;
+  background: var(--color-ticker-bg);
+  color: var(--color-ticker-text);
+  border-radius: 10px;
   padding: 6px 4px;
   font-size: 12px;
+  box-shadow: var(--shadow-medium);
 }
 
 .event-info span {
   display: block;
-  opacity: 0.8;
+  opacity: 0.9;
 }
+
+/* Dosya listesi */
 
 .file-list {
   list-style: none;
@@ -283,19 +572,19 @@ body {
 
 .file-list a {
   text-decoration: none;
-  color: #3d3022;
+  color: var(--color-text-muted);
 }
 
 .file-list a:hover {
   text-decoration: underline;
 }
 
-/* Footer */
+/* ------------ Footer ------------ */
 
 .site-footer {
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  border-top: 1px solid var(--color-border);
   padding: 20px 16px 24px;
-  background: #f0e5d6;
+  background: var(--color-bg-muted);
   margin-top: 32px;
 }
 
@@ -318,13 +607,14 @@ body {
   margin: 0 auto;
   font-size: 12px;
   opacity: 0.7;
+  color: var(--color-text-soft);
 }
 
-/* Admin sayfaları */
+/* ------------ Admin sayfaları ------------ */
 
 .admin-body {
-  background: #14110f;
-  color: #f5f1e8;
+  background: var(--color-admin-bg);
+  color: var(--color-admin-text);
   min-height: 100vh;
 }
 
@@ -334,15 +624,22 @@ body {
   align-items: center;
   justify-content: center;
   padding: 24px 16px;
+  background: radial-gradient(
+      circle at top,
+      var(--color-admin-bg-highlight),
+      transparent 60%
+    ),
+    var(--color-admin-bg);
 }
 
 .admin-card {
-  background: #1f1a16;
+  background: var(--color-admin-card);
   padding: 24px 20px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   width: 100%;
   max-width: 380px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--color-admin-border);
+  box-shadow: var(--shadow-strong);
 }
 
 .admin-logo {
@@ -373,32 +670,33 @@ body {
 }
 
 .form-input {
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-admin-border);
   padding: 8px 10px;
-  background: #14110f;
-  color: #f5f1e8;
+  background: var(--color-admin-bg);
+  color: var(--color-admin-text);
   font-size: 14px;
 }
 
 .form-input:focus {
   outline: none;
-  border-color: #f5e0b8;
+  border-color: var(--color-admin-accent);
 }
 
 .btn-primary {
   border: none;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   padding: 8px 12px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  background: #f5e0b8;
+  background: var(--color-admin-accent);
   color: #2b221a;
 }
 
 .btn-primary:hover {
-  filter: brightness(1.05);
+  background: var(--color-admin-accent-hover);
+  filter: brightness(1.02);
 }
 
 .admin-help {
@@ -413,7 +711,7 @@ body {
 }
 
 .admin-linkback a {
-  color: #f5e0b8;
+  color: var(--color-admin-accent);
   text-decoration: none;
 }
 
@@ -425,11 +723,11 @@ body {
 
 .admin-header {
   padding: 10px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+  border-bottom: 1px solid var(--color-admin-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #14110f;
+  background: var(--color-admin-bg);
 }
 
 .admin-header-left .logo-main {
@@ -443,15 +741,16 @@ body {
 }
 
 .admin-nav a {
-  color: #f5f1e8;
+  color: var(--color-admin-text);
   text-decoration: none;
   padding: 6px 10px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: 1px solid transparent;
 }
 
 .admin-nav a:hover {
   border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .admin-main {
@@ -461,10 +760,10 @@ body {
 }
 
 .admin-section {
-  background: #1f1a16;
-  border-radius: 12px;
+  background: var(--color-admin-card);
+  border-radius: var(--radius-lg);
   padding: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--color-admin-border);
   margin-bottom: 16px;
 }
 
@@ -484,7 +783,7 @@ body {
   grid-column: 1 / -1;
 }
 
-/* Responsive */
+/* ------------ Responsive ------------ */
 
 @media (max-width: 840px) {
   .layout-grid {
@@ -510,4 +809,97 @@ body {
   .main-nav {
     justify-content: flex-start;
   }
+}
+/* ----- Slider stil (ortak) ----- */
+
+.slider {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+/* Manşet kart içerisindeki slider: full-bleed */
+.card-featured .slider {
+  margin: -16px -18px 12px;
+}
+
+/* Küçük kartlardaki slider: yine full-bleed */
+.news-grid-small .card .slider {
+  margin: -16px -18px 10px;
+}
+
+/* Manşet yüksekliği */
+.card-featured .slider .slides,
+.card-featured .slider img {
+  height: 260px;
+}
+
+/* Küçük kart yüksekliği */
+.news-grid-small .slider .slides,
+.news-grid-small .slider img {
+  height: 200px;
+}
+
+/* Slides kapsayıcı */
+.slider .slides {
+  position: relative;
+  width: 100%;
+}
+
+.slider img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.slider img.active {
+  opacity: 1;
+}
+
+/* Ok butonları */
+.slider-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.4);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  font-size: 20px;
+  z-index: 2;
+}
+.slider-btn:hover {
+  background: rgba(0, 0, 0, 0.6);
+}
+.slider-btn.prev {
+  left: 10px;
+}
+.slider-btn.next {
+  right: 10px;
+}
+
+/* Noktalar (dots) */
+.slider-dots {
+  text-align: center;
+  position: absolute;
+  bottom: 10px;
+  width: 100%;
+}
+.slider-dots .dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin: 0 3px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+}
+.slider-dots .dot.active {
+  background: white;
 }
