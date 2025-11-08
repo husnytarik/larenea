@@ -1,0 +1,513 @@
+/* assets/css/main.css */
+
+/* Genel reset hafif */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background: #f5f1e8;
+  color: #2b2520;
+}
+
+/* Ana site */
+
+.site-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  background: #faf4e9;
+}
+
+.top-bar {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.logo {
+  display: flex;
+  flex-direction: column;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.logo-main {
+  font-weight: 800;
+  font-size: 20px;
+}
+
+.logo-sub {
+  font-size: 11px;
+  text-transform: none;
+  letter-spacing: 0.12em;
+  opacity: 0.8;
+}
+
+.main-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.main-nav a {
+  text-decoration: none;
+  color: #4a3c2e;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+
+.main-nav a:hover {
+  border-color: rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.02);
+}
+
+/* Kayan yazı */
+
+.news-ticker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background: #3e2e22;
+  color: #fdfaf5;
+}
+
+.news-ticker .ticker-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  white-space: nowrap;
+}
+
+.news-ticker .ticker-track {
+  overflow: hidden;
+  flex: 1;
+}
+
+.ticker-items {
+  display: inline-block;
+  white-space: nowrap;
+  animation: ticker-scroll 25s linear infinite;
+}
+
+@keyframes ticker-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Ana içerik düzeni */
+
+.site-main {
+  max-width: 1120px;
+  margin: 16px auto 32px;
+  padding: 0 16px;
+}
+
+.layout-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2.1fr) minmax(0, 1.2fr);
+  grid-template-rows: auto auto;
+  gap: 16px;
+}
+
+.card {
+  background: #fdfaf5;
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card-featured {
+  grid-column: 1;
+  grid-row: 1 / span 1;
+  min-height: 260px;
+}
+
+.card-medium {
+  grid-column: 1;
+}
+
+.sidebar {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card-small {
+  padding: 12px 14px;
+}
+
+.card-tag {
+  display: inline-block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #efe0c6;
+  color: #4e3622;
+}
+
+.card-title {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.25;
+}
+
+.card-featured .card-title {
+  font-size: 22px;
+}
+
+.card-meta {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.card-text {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.card-link {
+  margin-top: auto;
+  align-self: flex-start;
+  font-size: 13px;
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  color: #4a341f;
+}
+
+.card-link:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+/* Küçük haber grid’i */
+
+.news-grid-small {
+  grid-column: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+/* Sidebar */
+
+.sidebar-block {
+  background: #fdfaf5;
+  border-radius: 8px;
+  padding: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.sidebar-title {
+  margin: 0 0 8px;
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-weight: 700;
+}
+
+.event-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.event-list li {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.event-date {
+  min-width: 64px;
+  text-align: center;
+  font-weight: 700;
+  background: #3e2e22;
+  color: #fdfaf5;
+  border-radius: 6px;
+  padding: 6px 4px;
+  font-size: 12px;
+}
+
+.event-info span {
+  display: block;
+  opacity: 0.8;
+}
+
+.file-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 13px;
+}
+
+.file-list li + li {
+  margin-top: 4px;
+}
+
+.file-list a {
+  text-decoration: none;
+  color: #3d3022;
+}
+
+.file-list a:hover {
+  text-decoration: underline;
+}
+
+/* Footer */
+
+.site-footer {
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 20px 16px 24px;
+  background: #f0e5d6;
+  margin-top: 32px;
+}
+
+.footer-columns {
+  max-width: 1120px;
+  margin: 0 auto 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  font-size: 13px;
+}
+
+.site-footer h4 {
+  margin: 0 0 6px;
+  font-size: 14px;
+}
+
+.footer-bottom {
+  max-width: 1120px;
+  margin: 0 auto;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* Admin sayfaları */
+
+.admin-body {
+  background: #14110f;
+  color: #f5f1e8;
+  min-height: 100vh;
+}
+
+.admin-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+}
+
+.admin-card {
+  background: #1f1a16;
+  padding: 24px 20px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 380px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.admin-logo {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.admin-logo .logo-main {
+  font-size: 20px;
+}
+
+.admin-logo .logo-sub {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+.admin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.form-label {
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-input {
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  padding: 8px 10px;
+  background: #14110f;
+  color: #f5f1e8;
+  font-size: 14px;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #f5e0b8;
+}
+
+.btn-primary {
+  border: none;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #f5e0b8;
+  color: #2b221a;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.05);
+}
+
+.admin-help {
+  margin-top: 10px;
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+.admin-linkback {
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+.admin-linkback a {
+  color: #f5e0b8;
+  text-decoration: none;
+}
+
+.admin-linkback a:hover {
+  text-decoration: underline;
+}
+
+/* Admin panel layout */
+
+.admin-header {
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #14110f;
+}
+
+.admin-header-left .logo-main {
+  font-size: 18px;
+}
+
+.admin-nav {
+  display: flex;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.admin-nav a {
+  color: #f5f1e8;
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+
+.admin-nav a:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.admin-main {
+  padding: 16px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.admin-section {
+  background: #1f1a16;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 16px;
+}
+
+.admin-section h2 {
+  margin-top: 0;
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px 16px;
+}
+
+.form-label-full {
+  grid-column: 1 / -1;
+}
+
+/* Responsive */
+
+@media (max-width: 840px) {
+  .layout-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .card-featured .card-title {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 640px) {
+  .top-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .main-nav {
+    justify-content: flex-start;
+  }
+}
