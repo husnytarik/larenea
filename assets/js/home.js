@@ -102,17 +102,23 @@ async function loadNews() {
   const q = query(newsRef, orderBy("createdAt", "desc"));
   const snap = await getDocs(q);
 
-  const news = [];
-  snap.forEach((doc) => news.push({ id: doc.id, ...doc.data() }));
+  const allNews = [];
+  snap.forEach((doc) => allNews.push({ id: doc.id, ...doc.data() }));
 
-  if (!news.length) return;
+  if (!allNews.length) return;
 
-  const featured = news.find((n) => n.isFeatured) || news[0];
-  const others = news.filter((n) => n.id !== featured.id).slice(0, 6);
+  // isVisible === false olanları gizle,
+  // alan tanımlı değilse varsayılan: görünür kabul ediyoruz
+  const visibleNews = allNews.filter((n) => n.isVisible !== false);
+
+  if (!visibleNews.length) return;
+
+  const featured = visibleNews.find((n) => n.isFeatured) || visibleNews[0];
+  const others = visibleNews.filter((n) => n.id !== featured.id).slice(0, 6);
 
   renderFeaturedCard(featured);
   renderSmallNews(others);
-  renderTicker(news);
+  renderTicker(visibleNews);
 }
 
 // -------- Manşet kartı --------

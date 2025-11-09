@@ -1,69 +1,67 @@
 /* assets/css/main.css */
 
+/* ---------- Tema Değişkenleri ---------- */
 :root {
-  /* ---------- Temel Arka Planlar ---------- */
-  --color-bg: #f4f5f0;
-  --color-bg-alt: #ffffff;
-  --color-bg-muted: #e4e6dd;
-  --color-bg-dark: #1d221c;
+  /* Arka planlar */
+  --color-bg: #14110f;
+  --color-bg-alt: #1c1916;
+  --color-bg-muted: #25211d9a;
+  --color-bg-dark: #090705;
+  --color-bg-radial: rgba(148, 116, 78, 0.32);
+  --color-header-bg: rgba(20, 17, 14, 0.96);
 
-  /* ---------- Ek arka plan efektleri ---------- */
-  --color-bg-radial: rgba(83, 115, 90, 0.14);
-  --color-header-bg: rgba(246, 248, 241, 0.96);
+  /* Metin & link */
+  --color-text: #f3ecdf;
+  --color-text-muted: #b7aa95;
+  --color-text-soft: #92836d;
+  --color-link: #d6b26a;
+  --color-link-hover: #ebc87a;
 
-  /* ---------- Metin Renkleri ---------- */
-  --color-text: #222821;
-  --color-text-muted: #525b50;
-  --color-text-soft: #8a9487;
-  --color-text-invert: #f5f7f2;
-  --color-link: #4a6f4f;
-  --color-link-hover: #5f8a63;
+  /* Kenarlıklar */
+  --color-border: rgba(244, 232, 210, 0.06);
+  --color-border-strong: rgba(244, 232, 210, 0.18);
 
-  /* ---------- Kenarlıklar ve Gölgeler ---------- */
-  --color-border: rgba(10, 20, 10, 0.07);
-  --color-border-strong: rgba(10, 20, 10, 0.16);
-  --shadow-soft: 0 10px 24px rgba(15, 30, 15, 0.06);
-  --shadow-medium: 0 16px 32px rgba(15, 30, 15, 0.09);
-  --shadow-strong: 0 22px 42px rgba(15, 30, 15, 0.12);
+  /* Vurgu */
+  --color-accent: #c79a54;
+  --color-accent-dark: #8c6a34;
+  --color-accent-soft: rgba(199, 154, 84, 0.26);
+  --color-accent-contrast: #15120f;
 
-  /* ---------- Vurgu (Accent) Renkleri ---------- */
-  --color-accent: #4a6f4f;
-  --color-accent-dark: #304735;
-  --color-accent-soft: rgba(74, 111, 79, 0.16);
-  --color-accent-contrast: #f5f7f2;
+  /* Manşet & haber gradientleri */
+  --color-featured-grad-start: #241d16;
+  --color-featured-grad-end: #5a4023;
+  --color-news-grad-end: #664c2c;
 
-  /* ---------- Banner / Ticker ---------- */
-  --color-ticker-bg: #a2a370;
-  --color-ticker-text: #f9faf6;
-  --color-ticker-border: rgba(15, 30, 15, 0.18);
-  --color-ticker-label-border: rgba(245, 247, 241, 0.55);
-  --color-ticker-label-bg: rgba(0, 0, 0, 0.32);
+  /* Ticker (kayan yazı & tarih kutuları) */
+  --color-ticker-bg: rgba(20, 17, 14, 0.96);
+  --color-ticker-border: rgba(244, 232, 210, 0.16);
+  --color-ticker-text: #d8cdb9;
+  --color-ticker-label-bg: rgba(199, 154, 84, 0.18);
+  --color-ticker-label-border: rgba(199, 154, 84, 0.6);
 
-  /* ---------- Kart Gradientleri ---------- */
-  --color-featured-grad-start: #dce2d6;
-  --color-featured-grad-end: #607a63;
-  --color-news-grad-start: #d1d9cb;
-  --color-news-grad-end: #4f6b52;
-
-  /* ---------- Admin Tema ---------- */
-  --color-admin-bg: #121611;
-  --color-admin-card: #1b221b;
-  --color-admin-border: rgba(255, 255, 255, 0.08);
-  --color-admin-text: #f5f7f2;
-  --color-admin-accent: #7ea57f;
-  --color-admin-accent-hover: #8ebc8e;
-  --color-admin-bg-highlight: rgba(126, 165, 127, 0.14);
-
-  /* ---------- Radyüs ve Ölçüler ---------- */
-  --radius-xs: 4px;
-  --radius-sm: 8px;
-  --radius-md: 12px;
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
   --radius-lg: 16px;
-  --radius-xl: 20px;
   --radius-pill: 999px;
+
+  /* Shadow */
+  --shadow-soft: 0 10px 28px rgba(0, 0, 0, 0.45);
+  --shadow-medium: 0 14px 36px rgba(0, 0, 0, 0.55);
+  --shadow-strong: 0 16px 42px rgba(0, 0, 0, 0.7);
+
+  /* Admin tema */
+  --color-admin-bg: #0e0b08;
+  --color-admin-bg-highlight: rgba(199, 154, 84, 0.16);
+  --color-admin-card: #18120d;
+  --color-admin-border: rgba(244, 232, 210, 0.16);
+  --color-admin-text: #f3ecdf;
+  --color-admin-accent: #c79a54;
+  --color-admin-accent-hover: #d6b26a;
+  --color-admin-button-text: #2b221a;
 }
 
-/* Genel reset hafif */
+/* ---------- Reset ---------- */
 *,
 *::before,
 *::after {
@@ -88,7 +86,7 @@ body {
   color: var(--color-text);
 }
 
-/* ------------ Ana site ------------ */
+/* ---------- Üst Bar & Menü ---------- */
 
 .site-header {
   border-bottom: 1px solid var(--color-border);
@@ -164,7 +162,7 @@ body {
   border-color: var(--color-border-strong);
 }
 
-/* ------------ Kayan yazı ------------ */
+/* ---------- Kayan Yazı (Ticker) ---------- */
 
 .news-ticker {
   display: flex;
@@ -226,7 +224,7 @@ body {
   }
 }
 
-/* ------------ Ana içerik düzeni ------------ */
+/* ---------- Ana Layout ---------- */
 
 .site-main {
   max-width: 1120px;
@@ -241,7 +239,7 @@ body {
   gap: 18px;
 }
 
-/* ------------ Kartlar ------------ */
+/* ---------- Kartlar ---------- */
 
 .card {
   background: var(--color-bg-alt);
@@ -317,31 +315,68 @@ body {
   margin-top: 14px;
 }
 
-/* Diğer büyük kart */
-
-.card-medium {
-  grid-column: 1;
-}
-
-/* Küçük haber grid’i */
+/* ---------- Küçük Haber Grid’i ---------- */
 
 .news-grid-small {
   grid-column: 1;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 12px;
+  grid-auto-flow: dense;
 }
 
-/* Daha “dergi” hissi için küçük kart grid’i */
-.news-grid-small {
-  grid-column: 1;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 12px;
-  grid-auto-flow: dense; /* boşlukları sıkı doldur, mozaik görünüm */
+.news-grid-small .card {
+  position: relative;
+  padding-top: 12px;
 }
 
-/* ---------- Varyantlar ---------- */
+/* Küçük kartta gerçek görsel varsa:
+   - üst padding’i kaldır
+   - placeholder gradient’i gizle
+   - görseli kartın üst ve yanlarına kadar yay */
+.news-grid-small .card.has-media {
+  padding-top: 0;
+}
+
+.news-grid-small .card.has-media::before {
+  display: none;
+}
+
+/* Görsel alanı */
+.news-grid-small .card-media {
+  margin: 0 0 10px;
+  overflow: hidden;
+}
+
+/* Görsel varsa kartın içine full-bleed otursun */
+.news-grid-small .card.has-media .card-media {
+  margin: -16px -18px 12px;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+/* Küçük haber kartlarındaki img */
+.news-grid-small .card-media img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+}
+
+/* Küçük kart placeholder gradient (görsel yoksa) */
+.news-grid-small .card::before {
+  content: "";
+  display: block;
+  height: 96px;
+  margin: -4px -18px 10px;
+  border-radius: 14px 14px 0 0;
+  background: linear-gradient(
+    135deg,
+    var(--color-featured-grad-start),
+    var(--color-news-grad-end)
+  );
+}
+
+/* Küçük kart varyantları (procedural layout) */
 
 /* 2 sütuna yayılan geniş kart */
 .news-grid-small .card-small--wide {
@@ -353,7 +388,6 @@ body {
   min-height: 280px;
 }
 
-/* Tall kartlarda görseli biraz daha yüksek yap */
 .news-grid-small .card-small--tall .card-media img,
 .news-grid-small .card-small--tall .card-media.slider .slides {
   height: 240px;
@@ -385,58 +419,7 @@ body {
   }
 }
 
-.news-grid-small .card {
-  position: relative;
-  padding-top: 12px;
-}
-
-/* Küçük kartta gerçek görsel varsa:
-   - üst padding’i kaldır
-   - placeholder gradient’i gizle
-   - görseli kartın üst ve yanlarına kadar yay */
-.news-grid-small .card.has-media {
-  padding-top: 0;
-}
-
-.news-grid-small .card.has-media::before {
-  display: none;
-}
-
-/* Görsel alanı (varsayılan) */
-.news-grid-small .card-media {
-  margin: 0 0 10px;
-  overflow: hidden;
-}
-
-/* Görsel varsa kartın içine full-bleed otursun */
-.news-grid-small .card.has-media .card-media {
-  margin: -16px -18px 12px; /* kart padding’ini yok say */
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-}
-
-/* Küçük haber kartlarındaki img */
-.news-grid-small .card-media img {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-  display: block;
-}
-
-/* Küçük kart placeholder gradient (görsel yoksa) */
-.news-grid-small .card::before {
-  content: "";
-  display: block;
-  height: 96px;
-  margin: -4px -18px 10px;
-  border-radius: 14px 14px 0 0;
-  background: linear-gradient(
-    135deg,
-    var(--color-news-grad-start),
-    var(--color-news-grad-end)
-  );
-}
-
-/* ------------ Kart tipografi ------------ */
+/* ---------- Kart Tipografi ---------- */
 
 .card-tag {
   display: inline-block;
@@ -484,12 +467,19 @@ body {
 }
 
 .card-link:hover {
-  background: var(--color-admin-accent);
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
   box-shadow: var(--shadow-medium);
   transform: translateY(-1px);
 }
 
-/* Sidebar */
+/* Küçük kart genel padding */
+.card-small {
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+}
+
+/* ---------- Sidebar ---------- */
 
 .sidebar {
   grid-column: 2;
@@ -498,13 +488,6 @@ body {
   flex-direction: column;
   gap: 16px;
 }
-
-.card-small {
-  padding: 12px 14px;
-  border-radius: var(--radius-md);
-}
-
-/* ------------ Sidebar blokları ------------ */
 
 .sidebar-block {
   background: var(--color-bg-alt);
@@ -579,7 +562,7 @@ body {
   text-decoration: underline;
 }
 
-/* ------------ Footer ------------ */
+/* ---------- Footer ---------- */
 
 .site-footer {
   border-top: 1px solid var(--color-border);
@@ -610,7 +593,7 @@ body {
   color: var(--color-text-soft);
 }
 
-/* ------------ Admin sayfaları ------------ */
+/* ---------- Admin Sayfaları ---------- */
 
 .admin-body {
   background: var(--color-admin-bg);
@@ -618,6 +601,7 @@ body {
   min-height: 100vh;
 }
 
+/* Login sayfası arka planı */
 .admin-wrapper {
   min-height: 100vh;
   display: flex;
@@ -640,6 +624,7 @@ body {
   max-width: 380px;
   border: 1px solid var(--color-admin-border);
   box-shadow: var(--shadow-strong);
+  backdrop-filter: blur(10px);
 }
 
 .admin-logo {
@@ -669,6 +654,15 @@ body {
   gap: 4px;
 }
 
+/* Alanın etrafını focus olduğunda hafif vurgula */
+.form-label:focus-within {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: var(--radius-sm);
+  outline: 1px solid rgba(199, 154, 84, 0.45);
+  padding: 4px 6px;
+  margin: -4px -6px;
+}
+
 .form-input {
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-admin-border);
@@ -678,25 +672,57 @@ body {
   font-size: 14px;
 }
 
+.form-input::placeholder {
+  color: rgba(243, 236, 223, 0.35);
+}
+
 .form-input:focus {
   outline: none;
   border-color: var(--color-admin-accent);
+  box-shadow: 0 0 0 1px rgba(199, 154, 84, 0.35);
 }
 
+/* Genel buton – admin */
 .btn-primary {
   border: none;
   border-radius: var(--radius-pill);
-  padding: 8px 12px;
+  padding: 8px 14px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   background: var(--color-admin-accent);
-  color: #2b221a;
+  color: var(--color-admin-button-text);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.15s ease, transform 0.08s ease, box-shadow 0.15s ease;
 }
 
 .btn-primary:hover {
   background: var(--color-admin-accent-hover);
   filter: brightness(1.02);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.6);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* İkinci tip buton kullanmak istersen (sil, iptal vb.) */
+.btn-secondary {
+  border-radius: var(--radius-pill);
+  padding: 7px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid var(--color-admin-border);
+  color: var(--color-admin-text);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .admin-help {
@@ -719,7 +745,7 @@ body {
   text-decoration: underline;
 }
 
-/* Admin panel layout */
+/* Admin panel layout (login sonrası) */
 
 .admin-header {
   padding: 10px 16px;
@@ -728,10 +754,24 @@ body {
   align-items: center;
   justify-content: space-between;
   background: var(--color-admin-bg);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+.admin-header-left {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
 }
 
 .admin-header-left .logo-main {
   font-size: 18px;
+}
+
+.admin-header-left .logo-sub {
+  font-size: 11px;
+  opacity: 0.7;
 }
 
 .admin-nav {
@@ -746,6 +786,7 @@ body {
   padding: 6px 10px;
   border-radius: var(--radius-pill);
   border: 1px solid transparent;
+  font-size: 12px;
 }
 
 .admin-nav a:hover {
@@ -753,25 +794,43 @@ body {
   background: rgba(255, 255, 255, 0.06);
 }
 
-.admin-main {
-  padding: 16px;
-  max-width: 900px;
-  margin: 0 auto;
+/* Aktif sekme için istersen bu sınıfı HTML tarafında kullanabilirsin */
+.admin-nav a.active {
+  border-color: var(--color-admin-accent);
+  background: var(--color-admin-bg-highlight);
 }
+
+/* Ana içerik alanı */
+
+.admin-main {
+  padding: 18px 16px 28px;
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Her form / blok için kart hissi */
 
 .admin-section {
   background: var(--color-admin-card);
   border-radius: var(--radius-lg);
-  padding: 16px;
+  padding: 16px 16px 18px;
   border: 1px solid var(--color-admin-border);
-  margin-bottom: 16px;
+  box-shadow: var(--shadow-soft);
 }
 
 .admin-section h2 {
   margin-top: 0;
   font-size: 16px;
   margin-bottom: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(243, 236, 223, 0.9);
 }
+
+/* Form grid – haber & etkinlik formları */
 
 .admin-form-grid {
   display: grid;
@@ -779,11 +838,99 @@ body {
   gap: 12px 16px;
 }
 
+/* Tam satır kaplayan alanlar (textarea vs.) */
 .form-label-full {
   grid-column: 1 / -1;
 }
 
-/* ------------ Responsive ------------ */
+/* Küçük bilgi metinleri / status yazıları */
+.admin-meta {
+  font-size: 11px;
+  opacity: 0.78;
+}
+
+.admin-status {
+  font-size: 12px;
+  opacity: 0.88;
+}
+
+/* Etkinlik / haber listeleri için basit tablo stili istersen kullanabilirsin */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid rgba(244, 232, 210, 0.08);
+}
+
+.admin-table th {
+  text-align: left;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.7;
+}
+
+.admin-table tr:hover td {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Küçük rozetler (aktif/pasif, taslak vb. için) */
+.admin-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  border: 1px solid rgba(244, 232, 210, 0.2);
+  background: rgba(244, 232, 210, 0.06);
+}
+
+/* ---------- Responsive (Admin dahil) ---------- */
+
+@media (max-width: 840px) {
+  .layout-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .card-featured .card-title {
+    font-size: 20px;
+  }
+
+  .admin-main {
+    padding: 16px 12px 24px;
+  }
+
+  .admin-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 640px) {
+  .top-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .main-nav {
+    justify-content: flex-start;
+  }
+}
+
+/* ---------- Responsive ---------- */
 
 @media (max-width: 840px) {
   .layout-grid {
@@ -810,7 +957,8 @@ body {
     justify-content: flex-start;
   }
 }
-/* ----- Slider stil (ortak) ----- */
+
+/* ---------- Slider Ortak Stil ---------- */
 
 .slider {
   position: relative;
@@ -865,7 +1013,7 @@ body {
   top: 50%;
   transform: translateY(-50%);
   background: rgba(0, 0, 0, 0.4);
-  color: white;
+  color: #ffffff;
   border: none;
   border-radius: 50%;
   width: 32px;
@@ -874,12 +1022,15 @@ body {
   font-size: 20px;
   z-index: 2;
 }
+
 .slider-btn:hover {
   background: rgba(0, 0, 0, 0.6);
 }
+
 .slider-btn.prev {
   left: 10px;
 }
+
 .slider-btn.next {
   right: 10px;
 }
@@ -891,6 +1042,7 @@ body {
   bottom: 10px;
   width: 100%;
 }
+
 .slider-dots .dot {
   display: inline-block;
   width: 10px;
@@ -900,6 +1052,7 @@ body {
   background: rgba(255, 255, 255, 0.6);
   cursor: pointer;
 }
+
 .slider-dots .dot.active {
-  background: white;
+  background: #ffffff;
 }

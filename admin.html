@@ -86,6 +86,13 @@
               </select>
             </label>
 
+            <label class="form-label">
+              Yayın Durumu
+              <select id="news-visible" class="form-input">
+                <option value="true" selected>Yayında</option>
+                <option value="false">Gizli</option>
+              </select>
+            </label>
             <label class="form-label form-label-full">
               Kısa Özet
               <textarea
@@ -114,10 +121,12 @@
                 rows="2"
                 placeholder="Her satıra bir görsel URL'si yazabilirsin..."
               ></textarea>
-            </label>              
-            </div>
+            </label>
 
-            <div class="form-label-full">
+            <div
+              class="form-label form-label-full"
+              style="display: flex; gap: 8px; align-items: center"
+            >
               <button type="submit" class="btn-primary">Haberi Kaydet</button>
               <span
                 id="news-save-status"
@@ -170,6 +179,88 @@
               </p>
             </div>
           </div>
+        </section>
+
+        <!-- Yeni Etkinlik Ekle -->
+        <section class="admin-section">
+          <h2>Yeni Etkinlik Ekle</h2>
+          <form id="new-event-form" class="admin-form admin-form-grid">
+            <label class="form-label">
+              Etkinlik Adı
+              <input type="text" id="event-title" class="form-input" required />
+            </label>
+
+            <label class="form-label">
+              Tarih
+              <input
+                type="datetime-local"
+                id="event-date"
+                class="form-input"
+                required
+              />
+            </label>
+
+            <label class="form-label">
+              Etkinlik Sahibi (opsiyonel)
+              <input
+                type="text"
+                id="event-owner"
+                class="form-input"
+                placeholder="Örn: Akdeniz Üniversitesi"
+              />
+            </label>
+
+            <label class="form-label">
+              Konum
+              <input
+                type="text"
+                id="event-location"
+                class="form-input"
+                placeholder="Örn: Antalya, Kaleiçi"
+              />
+            </label>
+
+            <label class="form-label">
+              Ücret
+              <select id="event-price-type" class="form-input">
+                <option value="free">Ücretsiz</option>
+                <option value="paid">Ücretli</option>
+              </select>
+            </label>
+
+            <label class="form-label form-label-full">
+              Görsel Linkleri
+              <textarea
+                id="event-images-urls"
+                class="form-input"
+                rows="2"
+                placeholder="Her satıra bir görsel URL'si yazabilirsin..."
+              ></textarea>
+            </label>
+
+            <label class="form-label form-label-full">
+              Açıklama
+              <textarea
+                id="event-description"
+                class="form-input"
+                rows="3"
+                placeholder="Etkinliğin kısa açıklaması..."
+              ></textarea>
+            </label>
+
+            <div
+              class="form-label form-label-full"
+              style="display: flex; gap: 8px; align-items: center"
+            >
+              <button type="submit" class="btn-primary">
+                Etkinliği Kaydet
+              </button>
+              <span
+                id="event-save-status"
+                style="font-size: 12px; opacity: 0.8"
+              ></span>
+            </div>
+          </form>
         </section>
       </main>
     </div>
