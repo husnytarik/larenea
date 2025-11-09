@@ -31,6 +31,19 @@ function getFirstImage(item) {
   return null;
 }
 
+/* isVisible alanını güvenli şekilde yorumla
+   - undefined  → true (varsayılan: görünür)
+   - true       → true
+   - false      → false
+   - "false"    → false
+*/
+function isRecordVisible(item) {
+  if (item == null || typeof item !== "object") return true;
+  const v = item.isVisible;
+  if (v === false || v === "false") return false;
+  return true;
+}
+
 /* ---------- SLIDER ORTAK FONKSİYONU ---------- */
 
 function setupSlider(container) {
@@ -107,9 +120,8 @@ async function loadNews() {
 
   if (!allNews.length) return;
 
-  // isVisible === false olanları gizle,
-  // alan tanımlı değilse varsayılan: görünür kabul ediyoruz
-  const visibleNews = allNews.filter((n) => n.isVisible !== false);
+  // isVisible alanını hem boolean hem string için kontrol et
+  const visibleNews = allNews.filter(isRecordVisible);
 
   if (!visibleNews.length) return;
 
@@ -212,7 +224,7 @@ function renderSmallNews(others) {
     }
     // mod 4 ve 5 → standart kart kalır
 
-    // -------- Görsel kısmı aynı kalsın --------
+    // -------- Görsel kısmı --------
     const images = Array.isArray(n.images) ? n.images : [];
     const hasImage = images.length > 0;
 
@@ -292,17 +304,22 @@ function renderTicker(news) {
 
 async function loadEvents() {
   const evRef = collection(db, "events");
-  const q = query(evRef, orderBy("startDate", "asc"), limit(5));
+  const q = query(evRef, orderBy("startDate", "asc"), limit(20)); // önce biraz geniş al
   const snap = await getDocs(q);
 
-  const events = [];
-  snap.forEach((doc) => events.push({ id: doc.id, ...doc.data() }));
+  const eventsAll = [];
+  snap.forEach((doc) => eventsAll.push({ id: doc.id, ...doc.data() }));
+
+  // isVisible alanına göre filtrele (hem boolean hem string)
+  const events = eventsAll.filter(isRecordVisible);
 
   const list = document.querySelector(".event-list");
   if (!list) return;
 
   list.innerHTML = "";
-  events.forEach((ev) => {
+
+  // En fazla 5 tanesini göster
+  events.slice(0, 5).forEach((ev) => {
     const d = ev.startDate?.toDate
       ? ev.startDate.toDate()
       : new Date(ev.startDate);
@@ -339,6 +356,14 @@ function showNearby(events, lat, lng) {
   if (!nearDiv) return;
 
   const nearby = events
+    // lat / lng olmayanları ele
+    .filter(
+      (ev) =>
+        typeof ev.lat === "number" &&
+        !Number.isNaN(ev.lat) &&
+        typeof ev.lng === "number" &&
+        !Number.isNaN(ev.lng)
+    )
     .map((ev) => ({
       ...ev,
       distance: haversine(lat, lng, ev.lat, ev.lng),
@@ -355,7 +380,7 @@ function showNearby(events, lat, lng) {
     .map(
       (ev) =>
         `<p><strong>${ev.title}</strong> (${ev.distance.toFixed(1)} km) – ${
-          ev.locationName
+          ev.locationName || ""
         }</p>`
     )
     .join("");

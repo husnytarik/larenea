@@ -93,6 +93,7 @@
                 <option value="false">Gizli</option>
               </select>
             </label>
+
             <label class="form-label form-label-full">
               Kısa Özet
               <textarea
@@ -261,6 +262,51 @@
               ></span>
             </div>
           </form>
+        </section>
+
+        <!-- Etkinlik Listesi ve Detay/Edit -->
+        <section class="admin-section">
+          <h2>Etkinlikler</h2>
+          <div
+            style="
+              display: grid;
+              grid-template-columns: minmax(0, 1.4fr) minmax(0, 2fr);
+              gap: 16px;
+              align-items: flex-start;
+            "
+          >
+            <!-- Sol: etkinlik listesi -->
+            <div>
+              <ul
+                id="events-list"
+                style="
+                  list-style: none;
+                  padding: 0;
+                  margin: 0;
+                  max-height: 420px;
+                  overflow: auto;
+                  font-size: 14px;
+                "
+              >
+                <li style="opacity: 0.7">Etkinlikler yükleniyor...</li>
+              </ul>
+            </div>
+
+            <!-- Sağ: etkinlik düzenleme alanı -->
+            <div
+              id="event-detail"
+              style="
+                font-size: 14px;
+                border-left: 1px solid rgba(255, 255, 255, 0.08);
+                padding-left: 12px;
+                min-height: 80px;
+              "
+            >
+              <p style="opacity: 0.7">
+                Bir etkinliğe tıkladığında detayları burada düzenleyebileceksin.
+              </p>
+            </div>
+          </div>
         </section>
       </main>
     </div>

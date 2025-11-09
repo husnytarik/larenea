@@ -400,7 +400,7 @@ body {
     var(--color-bg-radial),
     var(--color-bg-alt)
   );
-  border-color: rgba(74, 111, 79, 0.35);
+  border-color: rgba(199, 154, 84, 0.35);
 }
 
 /* Daha kompakt kart – özet yok, daha yoğun grid */
@@ -682,6 +682,118 @@ body {
   box-shadow: 0 0 0 1px rgba(199, 154, 84, 0.35);
 }
 
+/* ---------- Harita Sayfası ---------- */
+
+.map-page .map-card {
+  padding: 16px 18px 20px;
+}
+
+.map-card-header h1 {
+  margin: 0 0 4px;
+  font-size: 20px;
+}
+
+.map-card-header p {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--color-text-soft);
+}
+
+#events-map {
+  width: 100%;
+  height: 460px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+/* Leaflet popup'ını temaya uydur */
+.leaflet-popup-content-wrapper {
+  background: var(--color-bg-alt);
+  color: var(--color-text);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-strong);
+}
+
+.leaflet-popup-tip {
+  background: var(--color-bg-alt);
+}
+
+.map-popup strong {
+  font-size: 14px;
+}
+
+.map-popup span {
+  font-size: 12px;
+  color: var(--color-text-soft);
+}
+
+/* Legend & alt liste */
+
+.map-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--color-text-soft);
+  margin-bottom: 8px;
+}
+
+.map-legend .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #c79a54;
+}
+
+/* Alt tarafta etkinlik listesi */
+
+.map-events-list {
+  margin-top: 6px;
+  border-top: 1px solid var(--color-border);
+  padding-top: 8px;
+  display: grid;
+  gap: 6px;
+}
+
+.map-event-item {
+  font-size: 13px;
+}
+
+.map-event-btn {
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  padding: 6px 4px;
+  border-radius: var(--radius-sm);
+  color: inherit;
+  cursor: pointer;
+}
+
+.map-event-btn:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.map-event-title {
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.map-event-meta {
+  font-size: 12px;
+  color: var(--color-text-soft);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.map-event-meta .sep {
+  opacity: 0.7;
+}
+
 /* Genel buton – admin */
 .btn-primary {
   border: none;
@@ -710,7 +822,7 @@ body {
   box-shadow: none;
 }
 
-/* İkinci tip buton kullanmak istersen (sil, iptal vb.) */
+/* İkinci tip buton (sil, iptal vb.) */
 .btn-secondary {
   border-radius: var(--radius-pill);
   padding: 7px 12px;
@@ -794,7 +906,7 @@ body {
   background: rgba(255, 255, 255, 0.06);
 }
 
-/* Aktif sekme için istersen bu sınıfı HTML tarafında kullanabilirsin */
+/* Aktif sekme için */
 .admin-nav a.active {
   border-color: var(--color-admin-accent);
   background: var(--color-admin-bg-highlight);
@@ -854,7 +966,7 @@ body {
   opacity: 0.88;
 }
 
-/* Etkinlik / haber listeleri için basit tablo stili istersen kullanabilirsin */
+/* Etkinlik / haber listeleri için basit tablo stili */
 .admin-table {
   width: 100%;
   border-collapse: collapse;
@@ -890,72 +1002,6 @@ body {
   font-size: 11px;
   border: 1px solid rgba(244, 232, 210, 0.2);
   background: rgba(244, 232, 210, 0.06);
-}
-
-/* ---------- Responsive (Admin dahil) ---------- */
-
-@media (max-width: 840px) {
-  .layout-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .sidebar {
-    grid-column: 1;
-    grid-row: auto;
-  }
-
-  .card-featured .card-title {
-    font-size: 20px;
-  }
-
-  .admin-main {
-    padding: 16px 12px 24px;
-  }
-
-  .admin-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-}
-
-@media (max-width: 640px) {
-  .top-bar {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .main-nav {
-    justify-content: flex-start;
-  }
-}
-
-/* ---------- Responsive ---------- */
-
-@media (max-width: 840px) {
-  .layout-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .sidebar {
-    grid-column: 1;
-    grid-row: auto;
-  }
-
-  .card-featured .card-title {
-    font-size: 20px;
-  }
-}
-
-@media (max-width: 640px) {
-  .top-bar {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .main-nav {
-    justify-content: flex-start;
-  }
 }
 
 /* ---------- Slider Ortak Stil ---------- */
@@ -1055,4 +1101,42 @@ body {
 
 .slider-dots .dot.active {
   background: #ffffff;
+}
+
+/* ---------- Responsive (Admin dahil) ---------- */
+
+@media (max-width: 840px) {
+  .layout-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .card-featured .card-title {
+    font-size: 20px;
+  }
+
+  .admin-main {
+    padding: 16px 12px 24px;
+  }
+
+  .admin-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 640px) {
+  .top-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .main-nav {
+    justify-content: flex-start;
+  }
 }

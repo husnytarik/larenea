@@ -68,22 +68,32 @@ const eventSaveStatus = document.getElementById("event-save-status");
 const newsListEl = document.getElementById("news-list");
 const newsDetailEl = document.getElementById("news-detail");
 
+// Etkinlik listesi ve detay alanı (admin HTML’inde bunları eklemiş olman lazım)
+const eventsListEl = document.getElementById("events-list");
+const eventDetailEl = document.getElementById("event-detail");
+
 // Haberleri cache’te tutalım
 let newsCache = [];
+
+// Etkinlikleri cache’te tutalım
+let eventsCache = [];
 
 // --- Auth state dinleme ---
 onAuthStateChanged(auth, (user) => {
   if (user) {
     // Giriş yapılmış
-    loginView.style.display = "none";
-    adminView.style.display = "block";
-    adminUserEmail.textContent = user.email || "";
+    if (loginView) loginView.style.display = "none";
+    if (adminView) adminView.style.display = "block";
+    if (adminUserEmail) adminUserEmail.textContent = user.email || "";
+
+    // Haber ve etkinlik listelerini yükle
     loadNewsList();
+    loadEventsList();
   } else {
     // Çıkış / henüz giriş yok
-    adminView.style.display = "none";
-    loginView.style.display = "flex";
-    loginError.textContent = "";
+    if (adminView) adminView.style.display = "none";
+    if (loginView) loginView.style.display = "flex";
+    if (loginError) loginError.textContent = "";
     if (loginForm) loginForm.reset();
   }
 });
@@ -92,7 +102,7 @@ onAuthStateChanged(auth, (user) => {
 if (loginForm) {
   loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    loginError.textContent = "";
+    if (loginError) loginError.textContent = "";
 
     const email = loginEmail.value.trim();
     const password = loginPassword.value;
@@ -108,7 +118,7 @@ if (loginForm) {
       } else if (err.code === "auth/user-disabled") {
         msg = "Bu kullanıcı devre dışı.";
       }
-      loginError.textContent = msg;
+      if (loginError) loginError.textContent = msg;
     }
   });
 }
@@ -131,6 +141,20 @@ function formatDate(ts) {
       month: "short",
       year: "numeric",
     });
+  } catch {
+    return "";
+  }
+}
+
+function formatDateInputValue(ts) {
+  // input[type="date"] için YYYY-MM-DD formatı
+  try {
+    if (!ts) return "";
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
   } catch {
     return "";
   }
@@ -171,7 +195,7 @@ if (newNewsForm) {
         summary: summary || null,
         content: content || null,
         isFeatured,
-        isVisible: true, // 🔴 varsayılan: yayında
+        isVisible: true, // varsayılan: yayında
         images: images.length ? images : null,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
@@ -236,6 +260,7 @@ if (newEventForm) {
         images: manualUrls.length ? manualUrls : null,
         startDate,
         priceType: eventPriceTypeInput?.value || "free",
+        isVisible: true, // varsayılan: yayında
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
@@ -243,6 +268,8 @@ if (newEventForm) {
         eventSaveStatus.textContent = "✔ Etkinlik kaydedildi.";
 
       newEventForm.reset();
+      // Yeni eklenen etkinlik listede de görülsün
+      loadEventsList();
     } catch (err) {
       console.error("Event save error:", err);
       if (eventSaveStatus)
@@ -293,7 +320,7 @@ function renderNewsList() {
     li.style.borderBottom = "1px solid rgba(255,255,255,0.06)";
     li.style.cursor = "pointer";
 
-    const visibleLabel = item.isVisible === false ? " • Gizli" : ""; // 🔴 görünür/gizli etiketi
+    const visibleLabel = item.isVisible === false ? " • Gizli" : "";
 
     li.innerHTML = `
       <div style="font-weight:600;">
@@ -446,7 +473,6 @@ function showNewsDetail(index) {
     const isVisibleNew = editVisibleInput.value === "true";
     const manualUrls = parseImageUrls(editImagesUrlsInput.value);
     const imagesFinal = manualUrls;
-    const newsVisibleInput = document.getElementById("news-visible");
 
     if (!title) {
       if (editSaveStatus) editSaveStatus.textContent = "Başlık boş olamaz.";
@@ -493,6 +519,262 @@ function showNewsDetail(index) {
     } catch (err) {
       console.error("Delete error:", err);
       alert("Haber silinirken bir hata oluştu: " + err.message);
+    }
+  });
+}
+
+/* ---------- ETKİNLİK LİSTESİ YÜKLE ---------- */
+
+async function loadEventsList() {
+  if (!eventsListEl) return; // admin HTML'de events-list yoksa sessizce geç
+
+  eventsListEl.innerHTML =
+    '<li style="opacity:.7;">Etkinlikler yükleniyor...</li>';
+
+  if (eventDetailEl) {
+    eventDetailEl.innerHTML =
+      '<p style="opacity:.7;">Bir etkinliğe tıkladığında detayları burada düzenleyebileceksin.</p>';
+  }
+
+  const refEvents = collection(db, "events");
+  const qEvents = query(refEvents, orderBy("startDate", "desc"));
+  const snap = await getDocs(qEvents);
+
+  eventsCache = [];
+  snap.forEach((docSnap) => {
+    eventsCache.push({ id: docSnap.id, ...docSnap.data() });
+  });
+
+  if (!eventsCache.length) {
+    eventsListEl.innerHTML =
+      '<li style="opacity:.7;">Henüz hiç etkinlik yok.</li>';
+    return;
+  }
+
+  renderEventsList();
+}
+
+function renderEventsList() {
+  if (!eventsListEl) return;
+  eventsListEl.innerHTML = "";
+
+  eventsCache.forEach((item, index) => {
+    const li = document.createElement("li");
+    li.style.padding = "6px 0";
+    li.style.borderBottom = "1px solid rgba(255,255,255,0.06)";
+    li.style.cursor = "pointer";
+
+    const visibleLabel = item.isVisible === false ? " • Gizli" : "";
+
+    li.innerHTML = `
+      <div style="font-weight:600;">
+        ${item.title || "(Başlıksız etkinlik)"}
+      </div>
+      <div style="font-size:12px; opacity:.7;">
+        ${formatDate(item.startDate)}${
+      item.locationName ? " • " + item.locationName : ""
+    }${visibleLabel}
+      </div>
+    `;
+
+    li.addEventListener("click", () => showEventDetail(index));
+    eventsListEl.appendChild(li);
+  });
+}
+
+/* ---------- ETKİNLİK DÜZENLEME FORMU ---------- */
+
+function showEventDetail(index) {
+  const item = eventsCache[index];
+  if (!item || !eventDetailEl) return;
+
+  const images = Array.isArray(item.images) ? item.images : [];
+  const isVisible = item.isVisible !== false; // alan yoksa varsayılan true
+  const dateValue = formatDateInputValue(item.startDate);
+
+  eventDetailEl.innerHTML = `
+    <h3 style="margin-top:0;">Etkinliği Düzenle</h3>
+    <form id="edit-event-form" class="admin-form">
+      <label class="form-label">
+        Başlık
+        <input type="text" id="edit-event-title" class="form-input" value="${escapeHtml(
+          item.title || ""
+        )}" />
+      </label>
+
+      <label class="form-label">
+        Tarih
+        <input type="date" id="edit-event-date" class="form-input" value="${dateValue}" />
+      </label>
+
+      <label class="form-label">
+        Düzenleyen / Kurum
+        <input type="text" id="edit-event-owner" class="form-input" value="${escapeHtml(
+          item.ownerName || ""
+        )}" />
+      </label>
+
+      <label class="form-label">
+        Konum adı
+        <input type="text" id="edit-event-location" class="form-input" value="${escapeHtml(
+          item.locationName || ""
+        )}" />
+      </label>
+
+      <label class="form-label">
+        Yayın Durumu
+        <select id="edit-event-visible" class="form-input">
+          <option value="true" ${isVisible ? "selected" : ""}>Yayında</option>
+          <option value="false" ${!isVisible ? "selected" : ""}>Gizli</option>
+        </select>
+      </label>
+
+      <label class="form-label">
+        Açıklama
+        <textarea id="edit-event-description" class="form-input" rows="3">${escapeHtml(
+          item.description || ""
+        )}</textarea>
+      </label>
+
+      <label class="form-label">
+        Görsel Linkleri
+        <textarea id="edit-event-images-urls" class="form-input" rows="3" placeholder="Her satıra bir URL yaz">${escapeHtml(
+          images.join("\n")
+        )}</textarea>
+      </label>
+
+      <div style="font-size:12px;margin-top:6px;opacity:.85;">
+        <div><strong>Görseller:</strong></div>
+        <div id="edit-event-images-preview" style="display:flex;flex-direction:column;gap:4px;margin-top:4px;"></div>
+      </div>
+
+      <div style="margin-top:10px;">
+        <button type="button" id="edit-event-save-btn" class="btn-primary">
+          Değişiklikleri Kaydet
+        </button>
+        <button type="button" id="edit-event-delete-btn" class="btn-primary" style="margin-left:8px;background:#7c2525;">
+          Etkinliği Sil
+        </button>
+        <span id="edit-event-save-status" style="font-size:12px;margin-left:8px;opacity:.8;"></span>
+      </div>
+    </form>
+  `;
+
+  const editTitleInput = document.getElementById("edit-event-title");
+  const editDateInput = document.getElementById("edit-event-date");
+  const editOwnerInput = document.getElementById("edit-event-owner");
+  const editLocationInput = document.getElementById("edit-event-location");
+  const editVisibleInput = document.getElementById("edit-event-visible");
+  const editDescriptionInput = document.getElementById(
+    "edit-event-description"
+  );
+  const editImagesUrlsInput = document.getElementById("edit-event-images-urls");
+  const editImagesPreview = document.getElementById(
+    "edit-event-images-preview"
+  );
+  const editSaveBtn = document.getElementById("edit-event-save-btn");
+  const editDeleteBtn = document.getElementById("edit-event-delete-btn");
+  const editSaveStatus = document.getElementById("edit-event-save-status");
+
+  // Görsel önizleme
+  function renderEditEventImagesPreview() {
+    if (!editImagesPreview) return;
+    editImagesPreview.innerHTML = "";
+
+    const urls = parseImageUrls(editImagesUrlsInput.value);
+    if (!urls.length) {
+      editImagesPreview.textContent = "Bu etkinlik için kayıtlı görsel yok.";
+      return;
+    }
+
+    urls.forEach((url) => {
+      const span = document.createElement("span");
+      span.textContent = url;
+      span.style.display = "inline-block";
+      span.style.maxWidth = "280px";
+      span.style.overflow = "hidden";
+      span.style.textOverflow = "ellipsis";
+      span.style.whiteSpace = "nowrap";
+      editImagesPreview.appendChild(span);
+    });
+  }
+
+  renderEditEventImagesPreview();
+  editImagesUrlsInput.addEventListener("input", renderEditEventImagesPreview);
+
+  // Değişiklikleri kaydet
+  editSaveBtn.addEventListener("click", async () => {
+    if (editSaveStatus) editSaveStatus.textContent = "Kaydediliyor...";
+
+    const title = editTitleInput.value.trim();
+    const dateStr = editDateInput.value;
+    const ownerName = editOwnerInput.value.trim();
+    const locationName = editLocationInput.value.trim();
+    const isVisibleNew = editVisibleInput.value === "true";
+    const description = editDescriptionInput.value.trim();
+    const manualUrls = parseImageUrls(editImagesUrlsInput.value);
+    const imagesFinal = manualUrls;
+
+    if (!title) {
+      if (editSaveStatus) editSaveStatus.textContent = "Başlık boş olamaz.";
+      return;
+    }
+
+    if (!dateStr) {
+      if (editSaveStatus) editSaveStatus.textContent = "Tarih zorunludur.";
+      return;
+    }
+
+    let startDate;
+    try {
+      startDate = new Date(dateStr);
+      if (isNaN(startDate.getTime())) throw new Error("Geçersiz tarih");
+    } catch {
+      if (editSaveStatus)
+        editSaveStatus.textContent = "Tarih formatı geçersiz.";
+      return;
+    }
+
+    try {
+      const refDoc = doc(db, "events", item.id);
+      await updateDoc(refDoc, {
+        title,
+        startDate,
+        ownerName: ownerName || null,
+        locationName: locationName || null,
+        isVisible: isVisibleNew,
+        description: description || null,
+        images: imagesFinal.length ? imagesFinal : null,
+        updatedAt: serverTimestamp(),
+      });
+
+      if (editSaveStatus)
+        editSaveStatus.textContent = "✔ Değişiklikler kaydedildi.";
+      await loadEventsList();
+
+      const newIndex = eventsCache.findIndex((ev) => ev.id === item.id);
+      if (newIndex !== -1) showEventDetail(newIndex);
+    } catch (err) {
+      console.error("Event edit error:", err);
+      if (editSaveStatus)
+        editSaveStatus.textContent = "❌ Kaydedilemedi: " + err.message;
+    }
+  });
+
+  // Etkinliği sil
+  editDeleteBtn.addEventListener("click", async () => {
+    const sure = confirm(
+      `"${item.title || "Bu etkinlik"}" kaydını silmek istediğine emin misin?`
+    );
+    if (!sure) return;
+
+    try {
+      await deleteDoc(doc(db, "events", item.id));
+      eventDetailEl.innerHTML = '<p style="opacity:.7;">Etkinlik silindi.</p>';
+      await loadEventsList();
+    } catch (err) {
+      console.error("Event delete error:", err);
+      alert("Etkinlik silinirken bir hata oluştu: " + err.message);
     }
   });
 }
