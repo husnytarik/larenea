@@ -58,39 +58,116 @@ const newsSaveStatus = document.getElementById("news-save-status");
 const newEventForm = document.getElementById("new-event-form");
 const eventTitleInput = document.getElementById("event-title");
 const eventDateInput = document.getElementById("event-date");
+const eventEndDateInput = document.getElementById("event-end-date");
 const eventOwnerInput = document.getElementById("event-owner");
 const eventLocationInput = document.getElementById("event-location");
+const eventAddressInput = document.getElementById("event-address");
+const eventLatInput = document.getElementById("event-lat");
+const eventLngInput = document.getElementById("event-lng");
 const eventImagesUrlsInput = document.getElementById("event-images-urls");
 const eventDescriptionInput = document.getElementById("event-description");
 const eventSaveStatus = document.getElementById("event-save-status");
+const eventPriceTypeSelect = document.getElementById("event-price-type");
 
-// Haber listesi ve detay alanı
+// Haber listesi / detay
 const newsListEl = document.getElementById("news-list");
 const newsDetailEl = document.getElementById("news-detail");
 
-// Etkinlik listesi ve detay alanı (admin HTML’inde bunları eklemiş olman lazım)
+// Etkinlik listesi / detay
 const eventsListEl = document.getElementById("events-list");
 const eventDetailEl = document.getElementById("event-detail");
 
-// Haberleri cache’te tutalım
+// Cache
 let newsCache = [];
-
-// Etkinlikleri cache’te tutalım
 let eventsCache = [];
 
-// --- Auth state dinleme ---
+// --- Admin içi harita (yeni etkinlik formu) ---
+let eventMap = null;
+let eventMarker = null;
+
+function initEventMap() {
+  const mapContainer = document.getElementById("event-map");
+  if (!mapContainer) return;
+  if (typeof L === "undefined") {
+    console.warn("Leaflet yüklü değil, admin haritası açılamadı.");
+    return;
+  }
+  if (eventMap) return; // bir kere kur
+
+  eventMap = L.map("event-map", {
+    scrollWheelZoom: true,
+  }).setView([39.0, 35.0], 6); // Türkiye ortası civarı
+
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+    maxZoom: 19,
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+  }).addTo(eventMap);
+
+  function updateInputs(lat, lng) {
+    if (eventLatInput) eventLatInput.value = lat.toFixed(6);
+    if (eventLngInput) eventLngInput.value = lng.toFixed(6);
+  }
+
+  function setMarker(lat, lng) {
+    if (!eventMap) return;
+    if (!eventMarker) {
+      eventMarker = L.marker([lat, lng], { draggable: true }).addTo(eventMap);
+      eventMarker.on("dragend", () => {
+        const pos = eventMarker.getLatLng();
+        updateInputs(pos.lat, pos.lng);
+      });
+    } else {
+      eventMarker.setLatLng([lat, lng]);
+    }
+    updateInputs(lat, lng);
+  }
+
+  // Eğer input’larda önceden değer varsa (sayfa yenilenince vs.)
+  const latStr = eventLatInput?.value?.trim();
+  const lngStr = eventLngInput?.value?.trim();
+  const latNum = latStr ? Number(latStr.replace(",", ".")) : null;
+  const lngNum = lngStr ? Number(lngStr.replace(",", ".")) : null;
+
+  if (
+    latNum !== null &&
+    lngNum !== null &&
+    !Number.isNaN(latNum) &&
+    !Number.isNaN(lngNum)
+  ) {
+    eventMap.setView([latNum, lngNum], 13);
+    setMarker(latNum, lngNum);
+  }
+
+  // Haritaya tıklayınca marker + input güncelle
+  eventMap.on("click", (e) => {
+    setMarker(e.latlng.lat, e.latlng.lng);
+  });
+
+  // Map konteyneri gizli değil ama boyut hesaplaması için küçük hack
+  setTimeout(() => {
+    eventMap.invalidateSize();
+  }, 200);
+}
+
+/* ---------- Auth state ---------- */
+
 onAuthStateChanged(auth, (user) => {
   if (user) {
-    // Giriş yapılmış
     if (loginView) loginView.style.display = "none";
     if (adminView) adminView.style.display = "block";
     if (adminUserEmail) adminUserEmail.textContent = user.email || "";
 
-    // Haber ve etkinlik listelerini yükle
-    loadNewsList();
-    loadEventsList();
+    loadNewsList().catch((err) =>
+      console.error("Haber listesi yüklenirken hata:", err)
+    );
+    loadEventsList().catch((err) =>
+      console.error("Etkinlik listesi yüklenirken hata:", err)
+    );
+
+    // Admin görünür olunca haritayı hazırlayalım
+    initEventMap();
   } else {
-    // Çıkış / henüz giriş yok
     if (adminView) adminView.style.display = "none";
     if (loginView) loginView.style.display = "flex";
     if (loginError) loginError.textContent = "";
@@ -98,7 +175,8 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-// --- Giriş formu ---
+/* ---------- Giriş / Çıkış ---------- */
+
 if (loginForm) {
   loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -109,7 +187,6 @@ if (loginForm) {
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // onAuthStateChanged paneli gösterecek
     } catch (err) {
       console.error("Login error:", err);
       let msg = "Giriş yapılamadı.";
@@ -123,7 +200,6 @@ if (loginForm) {
   });
 }
 
-// --- Çıkış ---
 if (logoutLink) {
   logoutLink.addEventListener("click", async (e) => {
     e.preventDefault();
@@ -131,7 +207,8 @@ if (logoutLink) {
   });
 }
 
-// --- Yardımcı: tarih formatı ---
+/* ---------- Yardımcılar ---------- */
+
 function formatDate(ts) {
   try {
     if (!ts) return "";
@@ -147,7 +224,6 @@ function formatDate(ts) {
 }
 
 function formatDateInputValue(ts) {
-  // input[type="date"] için YYYY-MM-DD formatı
   try {
     if (!ts) return "";
     const d = ts.toDate ? ts.toDate() : new Date(ts);
@@ -166,6 +242,15 @@ function parseImageUrls(text) {
     .split(/[\n,]+/)
     .map((s) => s.trim())
     .filter((s) => !!s);
+}
+
+function escapeHtml(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 /* ---------- YENİ HABER KAYDET ---------- */
@@ -195,7 +280,7 @@ if (newNewsForm) {
         summary: summary || null,
         content: content || null,
         isFeatured,
-        isVisible: true, // varsayılan: yayında
+        isVisible: true,
         images: images.length ? images : null,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
@@ -204,7 +289,10 @@ if (newNewsForm) {
       if (newsSaveStatus) newsSaveStatus.textContent = "✔ Haber kaydedildi.";
       newNewsForm.reset();
       newsFeaturedInput.value = "false";
-      loadNewsList();
+      setTimeout(() => {
+        if (newsSaveStatus) newsSaveStatus.textContent = "";
+      }, 2000);
+      await loadNewsList();
     } catch (err) {
       console.error("News save error:", err);
       if (newsSaveStatus)
@@ -222,11 +310,13 @@ if (newEventForm) {
 
     const title = eventTitleInput.value.trim();
     const dateStr = eventDateInput.value;
+    const endDateStr = eventEndDateInput.value;
     const owner = eventOwnerInput.value.trim();
     const locationName = eventLocationInput.value.trim();
+    const address = eventAddressInput.value.trim();
     const manualUrls = parseImageUrls(eventImagesUrlsInput.value);
     const description = eventDescriptionInput.value.trim();
-    const eventPriceTypeInput = document.getElementById("event-price-type");
+    const priceType = eventPriceTypeSelect?.value || "free";
 
     if (!title) {
       if (eventSaveStatus)
@@ -235,20 +325,48 @@ if (newEventForm) {
     }
 
     if (!dateStr) {
-      if (eventSaveStatus) eventSaveStatus.textContent = "Tarih zorunludur.";
+      if (eventSaveStatus)
+        eventSaveStatus.textContent = "Başlangıç tarihi zorunludur.";
       return;
     }
 
     let startDate;
     try {
       startDate = new Date(dateStr);
-      if (isNaN(startDate.getTime())) {
-        throw new Error("Geçersiz tarih");
-      }
+      if (isNaN(startDate.getTime())) throw new Error("Geçersiz tarih");
     } catch {
       if (eventSaveStatus)
-        eventSaveStatus.textContent = "Tarih formatı geçersiz.";
+        eventSaveStatus.textContent = "Başlangıç tarihi formatı geçersiz.";
       return;
+    }
+
+    let endDate = null;
+    if (endDateStr) {
+      try {
+        const d = new Date(endDateStr);
+        if (!isNaN(d.getTime())) endDate = d;
+      } catch {
+        // yok say
+      }
+    }
+
+    // Manuel / haritadan alınan lat-lng
+    const latStr = eventLatInput?.value.trim() || "";
+    const lngStr = eventLngInput?.value.trim() || "";
+    let lat = null;
+    let lng = null;
+
+    if (latStr && lngStr) {
+      const latNum = Number(latStr.replace(",", "."));
+      const lngNum = Number(lngStr.replace(",", "."));
+      if (Number.isNaN(latNum) || Number.isNaN(lngNum)) {
+        if (eventSaveStatus)
+          eventSaveStatus.textContent =
+            "Lat/Lng sayı olmalı. Örn: 36.86123 ve 30.63987";
+        return;
+      }
+      lat = latNum;
+      lng = lngNum;
     }
 
     try {
@@ -257,19 +375,26 @@ if (newEventForm) {
         description: description || null,
         ownerName: owner || null,
         locationName: locationName || null,
+        address: address || null,
         images: manualUrls.length ? manualUrls : null,
         startDate,
-        priceType: eventPriceTypeInput?.value || "free",
-        isVisible: true, // varsayılan: yayında
+        endDate: endDate || null,
+        priceType,
+        lat,
+        lng,
+        isVisible: true,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
+
       if (eventSaveStatus)
         eventSaveStatus.textContent = "✔ Etkinlik kaydedildi.";
-
       newEventForm.reset();
-      // Yeni eklenen etkinlik listede de görülsün
-      loadEventsList();
+      if (eventPriceTypeSelect) eventPriceTypeSelect.value = "free";
+      setTimeout(() => {
+        if (eventSaveStatus) eventSaveStatus.textContent = "";
+      }, 2000);
+      await loadEventsList();
     } catch (err) {
       console.error("Event save error:", err);
       if (eventSaveStatus)
@@ -278,7 +403,7 @@ if (newEventForm) {
   });
 }
 
-/* ---------- HABER LİSTESİ YÜKLE ---------- */
+/* ---------- HABER LİSTESİ ---------- */
 
 async function loadNewsList() {
   if (newsListEl) {
@@ -320,7 +445,8 @@ function renderNewsList() {
     li.style.borderBottom = "1px solid rgba(255,255,255,0.06)";
     li.style.cursor = "pointer";
 
-    const visibleLabel = item.isVisible === false ? " • Gizli" : "";
+    const visibleLabel =
+      item.isVisible === false || item.isVisible === "false" ? " • Gizli" : "";
 
     li.innerHTML = `
       <div style="font-weight:600;">
@@ -338,14 +464,14 @@ function renderNewsList() {
   });
 }
 
-/* ---------- HABER DÜZENLEME FORMU ---------- */
+/* ---------- HABER DÜZENLE ---------- */
 
 function showNewsDetail(index) {
   const item = newsCache[index];
   if (!item || !newsDetailEl) return;
 
   const images = Array.isArray(item.images) ? item.images : [];
-  const isVisible = item.isVisible !== false; // alan yoksa varsayılan: true
+  const isVisible = !(item.isVisible === false || item.isVisible === "false");
 
   newsDetailEl.innerHTML = `
     <h3 style="margin-top:0;">Haberi Düzenle</h3>
@@ -434,7 +560,6 @@ function showNewsDetail(index) {
   const editDeleteBtn = document.getElementById("edit-news-delete-btn");
   const editSaveStatus = document.getElementById("edit-news-save-status");
 
-  // Görsel önizleme (URL listesi)
   function renderEditImagesPreview() {
     if (!editImagesPreview) return;
     editImagesPreview.innerHTML = "";
@@ -458,10 +583,8 @@ function showNewsDetail(index) {
   }
 
   renderEditImagesPreview();
-
   editImagesUrlsInput.addEventListener("input", renderEditImagesPreview);
 
-  // Değişiklikleri kaydet
   editSaveBtn.addEventListener("click", async () => {
     if (editSaveStatus) editSaveStatus.textContent = "Kaydediliyor...";
 
@@ -495,7 +618,6 @@ function showNewsDetail(index) {
       if (editSaveStatus)
         editSaveStatus.textContent = "✔ Değişiklikler kaydedildi.";
       await loadNewsList();
-
       const newIndex = newsCache.findIndex((n) => n.id === item.id);
       if (newIndex !== -1) showNewsDetail(newIndex);
     } catch (err) {
@@ -505,7 +627,6 @@ function showNewsDetail(index) {
     }
   });
 
-  // Haberi sil
   editDeleteBtn.addEventListener("click", async () => {
     const sure = confirm(
       `"${item.title || "Bu haber"}" kaydını silmek istediğine emin misin?`
@@ -523,22 +644,21 @@ function showNewsDetail(index) {
   });
 }
 
-/* ---------- ETKİNLİK LİSTESİ YÜKLE ---------- */
+/* ---------- ETKİNLİK LİSTESİ ---------- */
 
 async function loadEventsList() {
-  if (!eventsListEl) return; // admin HTML'de events-list yoksa sessizce geç
-
-  eventsListEl.innerHTML =
-    '<li style="opacity:.7;">Etkinlikler yükleniyor...</li>';
-
+  if (eventsListEl) {
+    eventsListEl.innerHTML =
+      '<li style="opacity:.7;">Etkinlikler yükleniyor...</li>';
+  }
   if (eventDetailEl) {
     eventDetailEl.innerHTML =
       '<p style="opacity:.7;">Bir etkinliğe tıkladığında detayları burada düzenleyebileceksin.</p>';
   }
 
   const refEvents = collection(db, "events");
-  const qEvents = query(refEvents, orderBy("startDate", "desc"));
-  const snap = await getDocs(qEvents);
+  const qEv = query(refEvents, orderBy("startDate", "asc"));
+  const snap = await getDocs(qEv);
 
   eventsCache = [];
   snap.forEach((docSnap) => {
@@ -546,8 +666,10 @@ async function loadEventsList() {
   });
 
   if (!eventsCache.length) {
-    eventsListEl.innerHTML =
-      '<li style="opacity:.7;">Henüz hiç etkinlik yok.</li>';
+    if (eventsListEl) {
+      eventsListEl.innerHTML =
+        '<li style="opacity:.7;">Henüz hiç etkinlik yok.</li>';
+    }
     return;
   }
 
@@ -564,7 +686,8 @@ function renderEventsList() {
     li.style.borderBottom = "1px solid rgba(255,255,255,0.06)";
     li.style.cursor = "pointer";
 
-    const visibleLabel = item.isVisible === false ? " • Gizli" : "";
+    const visibleLabel =
+      item.isVisible === false || item.isVisible === "false" ? " • Gizli" : "";
 
     li.innerHTML = `
       <div style="font-weight:600;">
@@ -582,42 +705,38 @@ function renderEventsList() {
   });
 }
 
-/* ---------- ETKİNLİK DÜZENLEME FORMU ---------- */
+/* ---------- ETKİNLİK DÜZENLE ---------- */
 
 function showEventDetail(index) {
   const item = eventsCache[index];
   if (!item || !eventDetailEl) return;
 
   const images = Array.isArray(item.images) ? item.images : [];
-  const isVisible = item.isVisible !== false; // alan yoksa varsayılan true
-  const dateValue = formatDateInputValue(item.startDate);
+  const isVisible = !(item.isVisible === false || item.isVisible === "false");
+  const address = item.address || "";
+  const priceType = item.priceType || "free";
 
   eventDetailEl.innerHTML = `
     <h3 style="margin-top:0;">Etkinliği Düzenle</h3>
     <form id="edit-event-form" class="admin-form">
       <label class="form-label">
-        Başlık
+        Etkinlik Adı
         <input type="text" id="edit-event-title" class="form-input" value="${escapeHtml(
           item.title || ""
         )}" />
       </label>
 
       <label class="form-label">
-        Tarih
-        <input type="date" id="edit-event-date" class="form-input" value="${dateValue}" />
-      </label>
-
-      <label class="form-label">
-        Düzenleyen / Kurum
-        <input type="text" id="edit-event-owner" class="form-input" value="${escapeHtml(
-          item.ownerName || ""
+        Başlangıç Tarihi
+        <input type="date" id="edit-event-date" class="form-input" value="${formatDateInputValue(
+          item.startDate
         )}" />
       </label>
 
       <label class="form-label">
-        Konum adı
-        <input type="text" id="edit-event-location" class="form-input" value="${escapeHtml(
-          item.locationName || ""
+        Bitiş Tarihi (opsiyonel)
+        <input type="date" id="edit-event-end-date" class="form-input" value="${formatDateInputValue(
+          item.endDate
         )}" />
       </label>
 
@@ -630,13 +749,60 @@ function showEventDetail(index) {
       </label>
 
       <label class="form-label">
+        Etkinlik Sahibi
+        <input type="text" id="edit-event-owner" class="form-input" value="${escapeHtml(
+          item.ownerName || ""
+        )}" />
+      </label>
+
+      <label class="form-label">
+        Konum (Şehir / Mekan)
+        <input type="text" id="edit-event-location" class="form-input" value="${escapeHtml(
+          item.locationName || ""
+        )}" />
+      </label>
+
+      <label class="form-label">
+        Ücret
+        <select id="edit-event-price-type" class="form-input">
+          <option value="free" ${
+            priceType === "paid" ? "" : "selected"
+          }>Ücretsiz</option>
+          <option value="paid" ${
+            priceType === "paid" ? "selected" : ""
+          }>Ücretli</option>
+        </select>
+      </label>
+
+      <label class="form-label form-label-full">
+        Yazılı Adres
+        <textarea id="edit-event-address" class="form-input" rows="2">${escapeHtml(
+          address
+        )}</textarea>
+      </label>
+
+      <label class="form-label">
+        Enlem (lat)
+        <input type="text" id="edit-event-lat" class="form-input" value="${
+          item.lat ?? ""
+        }" />
+      </label>
+
+      <label class="form-label">
+        Boylam (lng)
+        <input type="text" id="edit-event-lng" class="form-input" value="${
+          item.lng ?? ""
+        }" />
+      </label>
+
+      <label class="form-label form-label-full">
         Açıklama
         <textarea id="edit-event-description" class="form-input" rows="3">${escapeHtml(
           item.description || ""
         )}</textarea>
       </label>
 
-      <label class="form-label">
+      <label class="form-label form-label-full">
         Görsel Linkleri
         <textarea id="edit-event-images-urls" class="form-input" rows="3" placeholder="Her satıra bir URL yaz">${escapeHtml(
           images.join("\n")
@@ -662,9 +828,14 @@ function showEventDetail(index) {
 
   const editTitleInput = document.getElementById("edit-event-title");
   const editDateInput = document.getElementById("edit-event-date");
+  const editEndDateInput = document.getElementById("edit-event-end-date");
+  const editVisibleInput = document.getElementById("edit-event-visible");
   const editOwnerInput = document.getElementById("edit-event-owner");
   const editLocationInput = document.getElementById("edit-event-location");
-  const editVisibleInput = document.getElementById("edit-event-visible");
+  const editPriceTypeInput = document.getElementById("edit-event-price-type");
+  const editAddressInput = document.getElementById("edit-event-address");
+  const editLatInput = document.getElementById("edit-event-lat");
+  const editLngInput = document.getElementById("edit-event-lng");
   const editDescriptionInput = document.getElementById(
     "edit-event-description"
   );
@@ -676,8 +847,7 @@ function showEventDetail(index) {
   const editDeleteBtn = document.getElementById("edit-event-delete-btn");
   const editSaveStatus = document.getElementById("edit-event-save-status");
 
-  // Görsel önizleme
-  function renderEditEventImagesPreview() {
+  function renderEditImagesPreview() {
     if (!editImagesPreview) return;
     editImagesPreview.innerHTML = "";
 
@@ -699,19 +869,21 @@ function showEventDetail(index) {
     });
   }
 
-  renderEditEventImagesPreview();
-  editImagesUrlsInput.addEventListener("input", renderEditEventImagesPreview);
+  renderEditImagesPreview();
+  editImagesUrlsInput.addEventListener("input", renderEditImagesPreview);
 
-  // Değişiklikleri kaydet
   editSaveBtn.addEventListener("click", async () => {
     if (editSaveStatus) editSaveStatus.textContent = "Kaydediliyor...";
 
     const title = editTitleInput.value.trim();
     const dateStr = editDateInput.value;
+    const endDateStr = editEndDateInput.value;
     const ownerName = editOwnerInput.value.trim();
     const locationName = editLocationInput.value.trim();
-    const isVisibleNew = editVisibleInput.value === "true";
+    const newPriceType = editPriceTypeInput.value || "free";
+    const newAddress = editAddressInput.value.trim();
     const description = editDescriptionInput.value.trim();
+    const isVisibleNew = editVisibleInput.value === "true";
     const manualUrls = parseImageUrls(editImagesUrlsInput.value);
     const imagesFinal = manualUrls;
 
@@ -720,39 +892,69 @@ function showEventDetail(index) {
       return;
     }
 
-    if (!dateStr) {
-      if (editSaveStatus) editSaveStatus.textContent = "Tarih zorunludur.";
-      return;
+    let startDate = item.startDate || null;
+    if (dateStr) {
+      try {
+        const d = new Date(dateStr);
+        if (!isNaN(d.getTime())) startDate = d;
+      } catch {
+        // eskiyi bırak
+      }
     }
 
-    let startDate;
-    try {
-      startDate = new Date(dateStr);
-      if (isNaN(startDate.getTime())) throw new Error("Geçersiz tarih");
-    } catch {
-      if (editSaveStatus)
-        editSaveStatus.textContent = "Tarih formatı geçersiz.";
-      return;
+    let endDate = item.endDate || null;
+    if (endDateStr) {
+      try {
+        const d = new Date(endDateStr);
+        if (!isNaN(d.getTime())) endDate = d;
+      } catch {
+        // bırak
+      }
+    } else {
+      endDate = null;
+    }
+
+    const latStr = editLatInput.value.trim();
+    const lngStr = editLngInput.value.trim();
+    let lat = null;
+    let lng = null;
+
+    if (latStr && lngStr) {
+      const latNum = Number(latStr.replace(",", "."));
+      const lngNum = Number(lngStr.replace(",", "."));
+      if (!Number.isNaN(latNum) && !Number.isNaN(lngNum)) {
+        lat = latNum;
+        lng = lngNum;
+      } else {
+        if (editSaveStatus)
+          editSaveStatus.textContent =
+            "Lat/Lng sayı olmalı. Örn: 36.86123 ve 30.63987";
+        return;
+      }
     }
 
     try {
       const refDoc = doc(db, "events", item.id);
       await updateDoc(refDoc, {
         title,
-        startDate,
+        startDate: startDate || null,
+        endDate: endDate || null,
         ownerName: ownerName || null,
         locationName: locationName || null,
-        isVisible: isVisibleNew,
+        address: newAddress || null,
         description: description || null,
         images: imagesFinal.length ? imagesFinal : null,
+        priceType: newPriceType,
+        isVisible: isVisibleNew,
+        lat,
+        lng,
         updatedAt: serverTimestamp(),
       });
 
       if (editSaveStatus)
         editSaveStatus.textContent = "✔ Değişiklikler kaydedildi.";
       await loadEventsList();
-
-      const newIndex = eventsCache.findIndex((ev) => ev.id === item.id);
+      const newIndex = eventsCache.findIndex((e) => e.id === item.id);
       if (newIndex !== -1) showEventDetail(newIndex);
     } catch (err) {
       console.error("Event edit error:", err);
@@ -761,7 +963,6 @@ function showEventDetail(index) {
     }
   });
 
-  // Etkinliği sil
   editDeleteBtn.addEventListener("click", async () => {
     const sure = confirm(
       `"${item.title || "Bu etkinlik"}" kaydını silmek istediğine emin misin?`
@@ -779,13 +980,8 @@ function showEventDetail(index) {
   });
 }
 
-/* ---------- Yardımcı: HTML escape ---------- */
+/* ---------- Başlat ---------- */
 
-function escapeHtml(str) {
-  if (!str) return "";
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
+(function initAdmin() {
+  // asıl işleri onAuthStateChanged yapıyor
+})();

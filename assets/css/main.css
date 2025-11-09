@@ -857,6 +857,23 @@ body {
   text-decoration: underline;
 }
 
+/* Admin içi etkinlik haritası */
+#event-map {
+  width: 100%;
+  height: 260px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-admin-border);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.admin-map-label {
+  font-size: 12px;
+  opacity: 0.8;
+  margin-bottom: 4px;
+}
+
 /* Admin panel layout (login sonrası) */
 
 .admin-header {

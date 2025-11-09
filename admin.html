@@ -5,6 +5,14 @@
     <title>Larenea | Admin</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="assets/css/main.css" />
+
+    <!-- Leaflet CSS (admin haritası için) -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
   </head>
   <body class="admin-body">
     <!-- GİRİŞ EKRANI -->
@@ -192,12 +200,21 @@
             </label>
 
             <label class="form-label">
-              Tarih
+              Başlangıç Tarih/Saat
               <input
                 type="datetime-local"
                 id="event-date"
                 class="form-input"
                 required
+              />
+            </label>
+
+            <label class="form-label">
+              Bitiş Tarih/Saat (opsiyonel)
+              <input
+                type="datetime-local"
+                id="event-end-date"
+                class="form-input"
               />
             </label>
 
@@ -212,7 +229,7 @@
             </label>
 
             <label class="form-label">
-              Konum
+              Konum (Şehir / Mekan)
               <input
                 type="text"
                 id="event-location"
@@ -227,6 +244,48 @@
                 <option value="free">Ücretsiz</option>
                 <option value="paid">Ücretli</option>
               </select>
+            </label>
+
+            <label class="form-label form-label-full">
+              Yazılı Adres
+              <textarea
+                id="event-address"
+                class="form-input"
+                rows="2"
+                placeholder="Haritada gözüksün diye tam adres (sokak, numara, ilçe, il)..."
+              ></textarea>
+            </label>
+
+            <!-- HARİTA: buraya tıklayıp marker ile konum seçiyorsun -->
+            <div class="form-label form-label-full">
+              <div class="admin-map-label">
+                Harita Üzerinde Konum Seç
+                <span class="admin-meta"
+                  >(Haritaya tıkladığında enlem/boylam otomatik dolacak)</span
+                >
+              </div>
+              <div id="event-map"></div>
+            </div>
+
+            <!-- MANUEL LAT/LNG (harita bunları dolduruyor ama istersen elle de değiştirebilirsin) -->
+            <label class="form-label">
+              Enlem (lat)
+              <input
+                type="text"
+                id="event-lat"
+                class="form-input"
+                placeholder="Örn: 36.86123"
+              />
+            </label>
+
+            <label class="form-label">
+              Boylam (lng)
+              <input
+                type="text"
+                id="event-lng"
+                class="form-input"
+                placeholder="Örn: 30.63987"
+              />
             </label>
 
             <label class="form-label form-label-full">
@@ -310,6 +369,13 @@
         </section>
       </main>
     </div>
+
+    <!-- Leaflet JS (global L) -->
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
 
     <!-- Admin JS -->
     <script type="module" src="assets/js/admin.js"></script>

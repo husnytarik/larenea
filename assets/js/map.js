@@ -42,7 +42,6 @@ function initMap() {
   const mapEl = document.getElementById("events-map");
   if (!mapEl) return null;
 
-  // Varsayılan merkez: Türkiye ortalarına yakın bir nokta
   const map = L.map("events-map", {
     scrollWheelZoom: true,
     zoomControl: true,
@@ -66,7 +65,7 @@ async function loadEventsOnMap() {
   const listContainer = document.getElementById("map-events-list");
   if (listContainer) {
     listContainer.innerHTML =
-      '<p style="opacity:.7;">Etkinlikler yükleniyor...</p>';
+      '<p style="opacity:.7;">Etkinlikler yükleniyor.</p>';
   }
 
   const evRef = collection(db, "events");
@@ -94,7 +93,6 @@ async function loadEventsOnMap() {
       listContainer.innerHTML =
         "<p style='opacity:.7;'>Konumu tanımlı etkinlik bulunamadı.</p>";
     }
-    // Yine de Türkiye merkezli kalsın
     return;
   }
 
@@ -108,7 +106,6 @@ async function loadEventsOnMap() {
     const locationName = ev.locationName || "";
     const dateStr = ev.startDate ? formatDate(ev.startDate) : "";
 
-    // Marker stilini marka renklerine göre ayarla
     const marker = L.circleMarker([lat, lng], {
       radius: 7,
       color: "#c79a54",
@@ -117,18 +114,25 @@ async function loadEventsOnMap() {
       fillOpacity: 0.9,
     }).addTo(map);
 
+    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+
     const popupHtml = `
       <div class="map-popup">
         <strong>${escapeHtml(title)}</strong><br/>
         <span>${dateStr}${
       locationName ? " – " + escapeHtml(locationName) : ""
-    }</span>
+    }</span><br/>
+        <a href="${mapsUrl}" target="_blank" rel="noopener" class="map-popup-link">
+          Haritalarda aç
+        </a>
       </div>
     `;
 
     marker.bindPopup(popupHtml);
 
-    // Bounds için
+    // harita listesiyle eşleştirmek için id sakla
+    marker._lareneaId = ev.id;
+
     boundsLatLngs.push([lat, lng]);
 
     // Alt listede göstermek için
@@ -149,23 +153,16 @@ async function loadEventsOnMap() {
         </button>
       </article>
     `);
-
-    // Listeden tıklayınca o markere zoom yapmak için,
-    // şu anda sadece harita üzerinde marker'a popup açıyoruz.
-    marker._lareneaId = ev.id;
   });
 
-  // Bounds'i ayarla
   if (boundsLatLngs.length >= 1) {
     const bounds = L.latLngBounds(boundsLatLngs);
     map.fitBounds(bounds.pad(0.3));
   }
 
-  // Listeyi yaz
   if (listContainer) {
     listContainer.innerHTML = itemsHtml.join("");
 
-    // Butonlara click eventi: ilgili markera odaklan
     const buttons = Array.from(
       listContainer.querySelectorAll(".map-event-btn")
     );
@@ -178,7 +175,6 @@ async function loadEventsOnMap() {
         const latLng = [ev.lat, ev.lng];
         map.setView(latLng, 13, { animate: true });
 
-        // Harita üzerindeki circleMarker'ı bulalım
         map.eachLayer((layer) => {
           if (layer._lareneaId && layer._lareneaId === id) {
             layer.openPopup();
