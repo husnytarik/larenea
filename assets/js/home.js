@@ -10,6 +10,8 @@ import {
   limit,
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
+import { setupEventModal, openEventModal } from "./eventModal.js";
+
 /* ---------- Yardımcılar ---------- */
 
 function formatDate(ts) {
@@ -22,23 +24,9 @@ function formatDate(ts) {
   });
 }
 
-// Firestore'daki images[] alanından ilk görseli al (fallback olarak dursun)
-function getFirstImage(item) {
-  if (!item) return null;
-  if (Array.isArray(item.images) && item.images.length > 0) {
-    return item.images[0];
-  }
-  return null;
-}
-
-/* isVisible alanını güvenli şekilde yorumla
-   - undefined  → true (varsayılan: görünür)
-   - true       → true
-   - false      → false
-   - "false"    → false
-*/
+// isVisible alanı: false / "false" ise gizli kabul et
 function isRecordVisible(item) {
-  if (item == null || typeof item !== "object") return true;
+  if (!item || typeof item !== "object") return true;
   const v = item.isVisible;
   if (v === false || v === "false") return false;
   return true;
@@ -55,7 +43,7 @@ function setupSlider(container) {
   const next = container.querySelector(".slider-btn.next");
 
   const total = slides.length;
-  if (total <= 1) return; // tek görselde slider kurmaya gerek yok
+  if (total <= 1) return;
 
   let index = 0;
 
@@ -65,7 +53,6 @@ function setupSlider(container) {
     dots.forEach((d, n) => d.classList.toggle("active", n === index));
   }
 
-  // Ok butonları
   if (prev) {
     prev.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -80,7 +67,6 @@ function setupSlider(container) {
     });
   }
 
-  // Dot'lar
   dots.forEach((dot) => {
     dot.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -89,9 +75,7 @@ function setupSlider(container) {
     });
   });
 
-  // Görselin sağına-soluna tıklayınca kaydır
   container.addEventListener("click", (e) => {
-    // Dot veya ok'a tıklandıysa burası çalışmasın
     if (e.target.closest(".slider-btn") || e.target.closest(".dot")) return;
 
     const rect = container.getBoundingClientRect();
@@ -104,7 +88,6 @@ function setupSlider(container) {
     }
   });
 
-  // İlk slide'ı garanti et
   showSlide(0);
 }
 
@@ -120,13 +103,11 @@ async function loadNews() {
 
   if (!allNews.length) return;
 
-  // isVisible alanını hem boolean hem string için kontrol et
   const visibleNews = allNews.filter(isRecordVisible);
-
   if (!visibleNews.length) return;
 
   const featured = visibleNews.find((n) => n.isFeatured) || visibleNews[0];
-  const others = visibleNews.filter((n) => n.id !== featured.id).slice(0, 6);
+  const others = visibleNews.filter((n) => n.id !== featured.id).slice(0, 6); // küçük kartlar
 
   renderFeaturedCard(featured);
   renderSmallNews(others);
@@ -206,35 +187,31 @@ function renderSmallNews(others) {
     const el = document.createElement("article");
     el.className = "card card-small";
 
-    // ----- Kart varyantını index’e göre belirle -----
-    const mod = index % 6; // 0..5 arasında döner
+    // 6 farklı kart tipi: wide, tall, highlight, compact, horizontal, overlay
+    const mod = index % 6;
 
     if (mod === 0) {
-      // İlk, 7., 13. kart vs → geniş kart
       el.classList.add("card-small--wide");
     } else if (mod === 1) {
-      // 2., 8., 14. kart → uzun kart
       el.classList.add("card-small--tall");
     } else if (mod === 2) {
-      // 3., 9., 15. kart → vurgulu kart
       el.classList.add("card-small--highlight");
     } else if (mod === 3) {
-      // 4., 10., 16. kart → kompakt kart
       el.classList.add("card-small--compact");
+    } else if (mod === 4) {
+      el.classList.add("card-small--horizontal");
+    } else if (mod === 5) {
+      el.classList.add("card-small--overlay");
     }
-    // mod 4 ve 5 → standart kart kalır
 
-    // -------- Görsel kısmı --------
     const images = Array.isArray(n.images) ? n.images : [];
-    const hasImage = images.length > 0;
 
-    if (hasImage) {
+    if (images.length > 0) {
       el.classList.add("has-media");
     }
 
     let mediaHtml = "";
     if (images.length > 1) {
-      // Çoklu görsel: küçük kartta slider
       mediaHtml = `
         <div class="card-media slider">
           <div class="slides">
@@ -262,7 +239,6 @@ function renderSmallNews(others) {
         </div>
       `;
     } else if (images.length === 1) {
-      // Tek görsel: normal img
       mediaHtml = `
         <div class="card-media">
           <img src="${images[0]}" alt="${n.title || ""}" loading="lazy">
@@ -281,7 +257,6 @@ function renderSmallNews(others) {
 
     grid.appendChild(el);
 
-    // Eğer küçük kartta çoklu görsel varsa slider'ı aktif et
     if (images.length > 1) {
       const sliderEl = el.querySelector(".card-media.slider");
       setupSlider(sliderEl);
@@ -294,7 +269,9 @@ function renderTicker(news) {
   const ticker = document.getElementById("ticker-items");
   if (!ticker) return;
 
-  ticker.innerHTML = news
+  const visibles = news.filter(isRecordVisible);
+
+  ticker.innerHTML = visibles
     .slice(0, 8)
     .map((n) => `<a href="haber.html?id=${n.id}">${n.title || "Haber"}</a>`)
     .join("");
@@ -304,42 +281,76 @@ function renderTicker(news) {
 
 async function loadEvents() {
   const evRef = collection(db, "events");
-  const q = query(evRef, orderBy("startDate", "asc"), limit(20)); // önce biraz geniş al
+  const q = query(evRef, orderBy("startDate", "asc"), limit(50));
   const snap = await getDocs(q);
 
   const eventsAll = [];
   snap.forEach((doc) => eventsAll.push({ id: doc.id, ...doc.data() }));
 
-  // isVisible alanına göre filtrele (hem boolean hem string)
-  const events = eventsAll.filter(isRecordVisible);
+  // --- BUGÜNDEN ÖNCEKİ ETKİNLİKLERİ ELE ---
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-  const list = document.querySelector(".event-list");
-  if (!list) return;
+  const upcomingAll = eventsAll.filter((ev) => {
+    if (!ev.startDate) return false;
 
-  list.innerHTML = "";
-
-  // En fazla 5 tanesini göster
-  events.slice(0, 5).forEach((ev) => {
     const d = ev.startDate?.toDate
       ? ev.startDate.toDate()
       : new Date(ev.startDate);
-    const dateStr = d.toLocaleDateString("tr-TR", {
-      day: "2-digit",
-      month: "short",
-    });
-    const li = document.createElement("li");
-    li.innerHTML = `
-      <span class="event-date">${dateStr}</span>
-      <div class="event-info">
-        <strong>${ev.title}</strong>
-        <span>${ev.locationName || ""}</span>
-      </div>
-    `;
-    list.appendChild(li);
+
+    if (isNaN(d.getTime())) return false;
+
+    // Sadece bugünden sonraki (veya bugünkü) etkinlikler
+    return d >= today;
   });
 
+  // isVisible filtresi
+  const events = upcomingAll.filter(isRecordVisible);
+
+  // Etkinlik listesi
+  const list = document.querySelector(".event-list");
+  if (list) {
+    list.innerHTML = "";
+    if (!events.length) {
+      const li = document.createElement("li");
+      li.textContent = "Yaklaşan etkinlik bulunmuyor.";
+      list.appendChild(li);
+    } else {
+      events.forEach((ev) => {
+        const d = ev.startDate?.toDate
+          ? ev.startDate.toDate()
+          : new Date(ev.startDate);
+        const dateStr = d.toLocaleDateString("tr-TR", {
+          day: "2-digit",
+          month: "short",
+        });
+
+        const timeStr = ev.startTime ? `, ${ev.startTime}` : ""; // varsa saat ekle
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <span class="event-date">${dateStr}${timeStr}</span>
+          <div class="event-info">
+            <strong>${ev.title}</strong>
+            <span>${ev.locationName || ""}</span>
+          </div>
+        `;
+
+        // Liste satırına tıklayınca modal aç
+        li.addEventListener("click", () => openEventModal(ev));
+
+        list.appendChild(li);
+      });
+    }
+  }
+
+  // Yakındaki etkinlikler
   const nearbyBox = document.getElementById("nearby-events-list");
   if (!nearbyBox) return;
+
+  if (!events.length) {
+    nearbyBox.textContent = "Yaklaşan ve yakın etkinlik bulunmuyor.";
+    return;
+  }
 
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
@@ -356,14 +367,7 @@ function showNearby(events, lat, lng) {
   if (!nearDiv) return;
 
   const nearby = events
-    // lat / lng olmayanları ele
-    .filter(
-      (ev) =>
-        typeof ev.lat === "number" &&
-        !Number.isNaN(ev.lat) &&
-        typeof ev.lng === "number" &&
-        !Number.isNaN(ev.lng)
-    )
+    .filter((ev) => typeof ev.lat === "number" && typeof ev.lng === "number")
     .map((ev) => ({
       ...ev,
       distance: haversine(lat, lng, ev.lat, ev.lng),
@@ -379,11 +383,20 @@ function showNearby(events, lat, lng) {
   nearDiv.innerHTML = nearby
     .map(
       (ev) =>
-        `<p><strong>${ev.title}</strong> (${ev.distance.toFixed(1)} km) – ${
-          ev.locationName || ""
-        }</p>`
+        `<button type="button" class="nearby-event-btn">
+          <strong>${ev.title}</strong> (${ev.distance.toFixed(1)} km) – ${
+          ev.locationName
+        }
+        </button>`
     )
     .join("");
+
+  // Yakın etkinlik butonlarına modal bağla
+  const buttons = nearDiv.querySelectorAll(".nearby-event-btn");
+  buttons.forEach((btn, i) => {
+    const ev = nearby[i];
+    btn.addEventListener("click", () => openEventModal(ev));
+  });
 }
 
 function haversine(lat1, lon1, lat2, lon2) {
@@ -402,6 +415,9 @@ function haversine(lat1, lon1, lat2, lon2) {
 
 (async function init() {
   try {
+    // Ortak modal davranışları
+    setupEventModal();
+
     await loadNews();
     await loadEvents();
   } catch (err) {

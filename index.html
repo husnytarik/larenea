@@ -17,7 +17,7 @@
           <a href="index.html" class="active">Ana Sayfa</a>
           <a href="event.html">Etkinlikler</a>
           <a href="#">Hakkında</a>
-          <a href="#">İletişim</a>
+          <a href="#">Bize Yazın</a>
         </nav>
       </div>
       <div class="news-ticker">
@@ -66,7 +66,7 @@
           <p>Arkeoloji dünyasından en güncel haberler ve etkinlikler.</p>
         </div>
         <div>
-          <h4>İletişim</h4>
+          <h4>Bize Yazın</h4>
           <p><a href="mailto:info@larenea.com">info@larenea.com</a></p>
         </div>
       </div>
@@ -74,8 +74,33 @@
         © 2025 Larenea | Arkeoloji Haberleri Platformu
       </div>
     </footer>
+    <!-- Ortak Etkinlik Modalı -->
+    <div id="event-modal" class="event-modal">
+      <div class="event-modal-backdrop"></div>
+      <div class="event-modal-dialog">
+        <button type="button" class="event-modal-close" aria-label="Kapat">
+          ×
+        </button>
 
-    <!-- 🔥 Firebase bağlantısı -->
+        <div class="event-modal-media">
+          <img id="event-modal-image" src="" alt="" />
+        </div>
+
+        <div class="event-modal-content">
+          <h2 id="event-modal-title" class="event-modal-title"></h2>
+          <p id="event-modal-date" class="event-modal-meta"></p>
+          <p id="event-modal-location" class="event-modal-location"></p>
+          <p id="event-modal-address" class="event-modal-address"></p>
+
+          <div class="event-modal-actions">
+            <button type="button" id="event-modal-map-btn" class="btn-primary">
+              Haritalarda aç
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script type="module" src="assets/js/home.js"></script>
   </body>
 </html>

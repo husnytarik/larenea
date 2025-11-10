@@ -68,6 +68,9 @@ const eventImagesUrlsInput = document.getElementById("event-images-urls");
 const eventDescriptionInput = document.getElementById("event-description");
 const eventSaveStatus = document.getElementById("event-save-status");
 const eventPriceTypeSelect = document.getElementById("event-price-type");
+// saat inputları (HTML'de eklemeyi unutma)
+const eventStartTimeInput = document.getElementById("event-start-time");
+const eventEndTimeInput = document.getElementById("event-end-time");
 
 // Haber listesi / detay
 const newsListEl = document.getElementById("news-list");
@@ -123,7 +126,7 @@ function initEventMap() {
     updateInputs(lat, lng);
   }
 
-  // Eğer input’larda önceden değer varsa (sayfa yenilenince vs.)
+  // Eğer input’larda önceden değer varsa
   const latStr = eventLatInput?.value?.trim();
   const lngStr = eventLngInput?.value?.trim();
   const latNum = latStr ? Number(latStr.replace(",", ".")) : null;
@@ -144,7 +147,6 @@ function initEventMap() {
     setMarker(e.latlng.lat, e.latlng.lng);
   });
 
-  // Map konteyneri gizli değil ama boyut hesaplaması için küçük hack
   setTimeout(() => {
     eventMap.invalidateSize();
   }, 200);
@@ -165,7 +167,6 @@ onAuthStateChanged(auth, (user) => {
       console.error("Etkinlik listesi yüklenirken hata:", err)
     );
 
-    // Admin görünür olunca haritayı hazırlayalım
     initEventMap();
   } else {
     if (adminView) adminView.style.display = "none";
@@ -234,6 +235,12 @@ function formatDateInputValue(ts) {
   } catch {
     return "";
   }
+}
+
+// "14:30" / "14:30:00" → "14:30"
+function formatTimeInputValue(value) {
+  if (!value) return "";
+  return String(value).slice(0, 5);
 }
 
 function parseImageUrls(text) {
@@ -318,6 +325,9 @@ if (newEventForm) {
     const description = eventDescriptionInput.value.trim();
     const priceType = eventPriceTypeSelect?.value || "free";
 
+    const startTime = eventStartTimeInput?.value.trim() || "";
+    const endTime = eventEndTimeInput?.value.trim() || "";
+
     if (!title) {
       if (eventSaveStatus)
         eventSaveStatus.textContent = "Etkinlik adı zorunludur.";
@@ -379,6 +389,8 @@ if (newEventForm) {
         images: manualUrls.length ? manualUrls : null,
         startDate,
         endDate: endDate || null,
+        startTime: startTime || null,
+        endTime: endTime || null,
         priceType,
         lat,
         lng,
@@ -689,12 +701,14 @@ function renderEventsList() {
     const visibleLabel =
       item.isVisible === false || item.isVisible === "false" ? " • Gizli" : "";
 
+    const timePart = item.startTime ? " " + item.startTime : "";
+
     li.innerHTML = `
       <div style="font-weight:600;">
         ${item.title || "(Başlıksız etkinlik)"}
       </div>
       <div style="font-size:12px; opacity:.7;">
-        ${formatDate(item.startDate)}${
+        ${formatDate(item.startDate)}${timePart}${
       item.locationName ? " • " + item.locationName : ""
     }${visibleLabel}
       </div>
@@ -715,6 +729,9 @@ function showEventDetail(index) {
   const isVisible = !(item.isVisible === false || item.isVisible === "false");
   const address = item.address || "";
   const priceType = item.priceType || "free";
+
+  const startTimeVal = formatTimeInputValue(item.startTime);
+  const endTimeVal = formatTimeInputValue(item.endTime);
 
   eventDetailEl.innerHTML = `
     <h3 style="margin-top:0;">Etkinliği Düzenle</h3>
@@ -738,6 +755,16 @@ function showEventDetail(index) {
         <input type="date" id="edit-event-end-date" class="form-input" value="${formatDateInputValue(
           item.endDate
         )}" />
+      </label>
+
+      <label class="form-label">
+        Başlangıç Saati
+        <input type="time" id="edit-event-start-time" class="form-input" value="${startTimeVal}" />
+      </label>
+
+      <label class="form-label">
+        Bitiş Saati (opsiyonel)
+        <input type="time" id="edit-event-end-time" class="form-input" value="${endTimeVal}" />
       </label>
 
       <label class="form-label">
@@ -829,6 +856,8 @@ function showEventDetail(index) {
   const editTitleInput = document.getElementById("edit-event-title");
   const editDateInput = document.getElementById("edit-event-date");
   const editEndDateInput = document.getElementById("edit-event-end-date");
+  const editStartTimeInput = document.getElementById("edit-event-start-time");
+  const editEndTimeInput = document.getElementById("edit-event-end-time");
   const editVisibleInput = document.getElementById("edit-event-visible");
   const editOwnerInput = document.getElementById("edit-event-owner");
   const editLocationInput = document.getElementById("edit-event-location");
@@ -878,6 +907,8 @@ function showEventDetail(index) {
     const title = editTitleInput.value.trim();
     const dateStr = editDateInput.value;
     const endDateStr = editEndDateInput.value;
+    const startTimeStr = editStartTimeInput.value.trim();
+    const endTimeStr = editEndTimeInput.value.trim();
     const ownerName = editOwnerInput.value.trim();
     const locationName = editLocationInput.value.trim();
     const newPriceType = editPriceTypeInput.value || "free";
@@ -939,6 +970,8 @@ function showEventDetail(index) {
         title,
         startDate: startDate || null,
         endDate: endDate || null,
+        startTime: startTimeStr || null,
+        endTime: endTimeStr || null,
         ownerName: ownerName || null,
         locationName: locationName || null,
         address: newAddress || null,

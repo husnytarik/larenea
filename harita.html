@@ -61,20 +61,38 @@
       </div>
     </footer>
 
-    <!-- Leaflet JS -->
+    <!-- Ortak Etkinlik Modalı -->
+    <div id="event-modal" class="event-modal">
+      <div class="event-modal-backdrop"></div>
+      <div class="event-modal-dialog">
+        <button type="button" class="event-modal-close" aria-label="Kapat">
+          ×
+        </button>
+
+        <div class="event-modal-media">
+          <img id="event-modal-image" src="" alt="" />
+        </div>
+
+        <div class="event-modal-content">
+          <h2 id="event-modal-title" class="event-modal-title"></h2>
+          <p id="event-modal-date" class="event-modal-meta"></p>
+          <p id="event-modal-location" class="event-modal-location"></p>
+          <p id="event-modal-address" class="event-modal-address"></p>
+
+          <div class="event-modal-actions">
+            <button type="button" id="event-modal-map-btn" class="btn-primary">
+              Haritalarda aç
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script
       src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
       integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
       crossorigin=""
     ></script>
-
-    <!-- Harita JS (Firebase db'yi kullanan modül) -->
     <script type="module" src="assets/js/map.js"></script>
-
-    <script>
-      // küçük detay: footer yılı
-      document.getElementById("footer-year").textContent =
-        new Date().getFullYear();
-    </script>
   </body>
 </html>

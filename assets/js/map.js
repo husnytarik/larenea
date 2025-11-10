@@ -8,6 +8,8 @@ import {
   orderBy,
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
+import { setupEventModal, openEventModal } from "./eventModal.js";
+
 /* Yardımcı: tarih formatı */
 function formatDate(ts) {
   if (!ts) return "";
@@ -19,15 +21,15 @@ function formatDate(ts) {
   });
 }
 
-/* Yardımcı: isVisible alanı */
+// isVisible alanı: false / "false" ise gizli kabul et
 function isRecordVisible(item) {
   if (!item || typeof item !== "object") return true;
   const v = item.isVisible;
   if (v === false || v === "false") return false;
-  return true; // alan yoksa varsayılan: görünür
+  return true;
 }
 
-/* XSS'den kaçınmak için basit escape */
+// Basit escape
 function escapeHtml(str) {
   if (!str) return "";
   return String(str)
@@ -37,7 +39,7 @@ function escapeHtml(str) {
     .replace(/"/g, "&quot;");
 }
 
-/* Leaflet haritasını başlat */
+/* Harita init */
 function initMap() {
   const mapEl = document.getElementById("events-map");
   if (!mapEl) return null;
@@ -47,7 +49,6 @@ function initMap() {
     zoomControl: true,
   }).setView([39.0, 35.0], 6);
 
-  // Koyu tema tile (Carto Dark)
   L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
     maxZoom: 19,
     attribution:
@@ -62,10 +63,13 @@ async function loadEventsOnMap() {
   const map = initMap();
   if (!map) return;
 
+  // Ortak modal kapatma davranışlarını kur
+  setupEventModal();
+
   const listContainer = document.getElementById("map-events-list");
   if (listContainer) {
     listContainer.innerHTML =
-      '<p style="opacity:.7;">Etkinlikler yükleniyor.</p>';
+      '<p style="opacity:.7;">Etkinlikler yükleniyor...</p>';
   }
 
   const evRef = collection(db, "events");
@@ -106,6 +110,7 @@ async function loadEventsOnMap() {
     const locationName = ev.locationName || "";
     const dateStr = ev.startDate ? formatDate(ev.startDate) : "";
 
+    // Marker
     const marker = L.circleMarker([lat, lng], {
       radius: 7,
       color: "#c79a54",
@@ -114,28 +119,28 @@ async function loadEventsOnMap() {
       fillOpacity: 0.9,
     }).addTo(map);
 
-    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+    marker._lareneaId = ev.id;
 
+    // POPUP (label) – tekrar gelsin diye bunu koruyoruz
     const popupHtml = `
       <div class="map-popup">
         <strong>${escapeHtml(title)}</strong><br/>
         <span>${dateStr}${
       locationName ? " – " + escapeHtml(locationName) : ""
-    }</span><br/>
-        <a href="${mapsUrl}" target="_blank" rel="noopener" class="map-popup-link">
-          Haritalarda aç
-        </a>
+    }</span>
       </div>
     `;
-
     marker.bindPopup(popupHtml);
 
-    // harita listesiyle eşleştirmek için id sakla
-    marker._lareneaId = ev.id;
+    // Markere tıklayınca modal da açılsın
+    marker.on("click", () => {
+      openEventModal(ev);
+    });
 
+    // Bounds
     boundsLatLngs.push([lat, lng]);
 
-    // Alt listede göstermek için
+    // Alt liste
     itemsHtml.push(`
       <article class="map-event-item">
         <button type="button" data-id="${ev.id}" class="map-event-btn">
@@ -155,11 +160,11 @@ async function loadEventsOnMap() {
     `);
   });
 
-  if (boundsLatLngs.length >= 1) {
-    const bounds = L.latLngBounds(boundsLatLngs);
-    map.fitBounds(bounds.pad(0.3));
+  if (boundsLatLngs.length) {
+    map.fitBounds(boundsLatLngs, { padding: [40, 40] });
   }
 
+  // Liste tıklamaları → marker’a zoom + modal
   if (listContainer) {
     listContainer.innerHTML = itemsHtml.join("");
 
@@ -175,11 +180,7 @@ async function loadEventsOnMap() {
         const latLng = [ev.lat, ev.lng];
         map.setView(latLng, 13, { animate: true });
 
-        map.eachLayer((layer) => {
-          if (layer._lareneaId && layer._lareneaId === id) {
-            layer.openPopup();
-          }
-        });
+        openEventModal(ev);
       });
     });
   }
