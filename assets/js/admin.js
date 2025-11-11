@@ -51,8 +51,18 @@ const newsCategoryInput = document.getElementById("news-category");
 const newsFeaturedInput = document.getElementById("news-featured");
 const newsSummaryInput = document.getElementById("news-summary");
 const newsContentInput = document.getElementById("news-content");
-const newsImagesUrlsInput = document.getElementById("news-images-urls");
 const newsSaveStatus = document.getElementById("news-save-status");
+
+// yeni: kaynak alanları
+const newsSourceUrlInput = document.getElementById("news-source-url");
+const newsSourceLabelInput = document.getElementById("news-source-label");
+
+// yeni: dinamik görsel satırları için konteyner ve buton
+const newsImagesRowsContainer = document.getElementById("news-images-rows");
+const newsAddImageRowBtn = document.getElementById("news-add-image-row");
+
+// Firestore koleksiyonu
+const refNews = collection(db, "news");
 
 // Etkinlik formu
 const newEventForm = document.getElementById("new-event-form");
@@ -68,7 +78,8 @@ const eventImagesUrlsInput = document.getElementById("event-images-urls");
 const eventDescriptionInput = document.getElementById("event-description");
 const eventSaveStatus = document.getElementById("event-save-status");
 const eventPriceTypeSelect = document.getElementById("event-price-type");
-// saat inputları (HTML'de eklemeyi unutma)
+const eventLinkUrlInput = document.getElementById("event-link-url"); // etkinlik linki
+// saat inputları
 const eventStartTimeInput = document.getElementById("event-start-time");
 const eventEndTimeInput = document.getElementById("event-end-time");
 
@@ -98,11 +109,21 @@ function initEventMap() {
   if (eventMap) return; // bir kere kur
 
   eventMap = L.map("event-map", {
+    zoomControl: false,
     scrollWheelZoom: true,
   }).setView([39.0, 35.0], 6); // Türkiye ortası civarı
-
+  eventMap.attributionControl.remove();
+  L.tileLayer(
+    "https://services.arcgisonline.com/arcgis/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}",
+    {
+      opacity: 0.6,
+      maxZoom: 19,
+      attribution: "© Esri — Source: Esri, USGS, NOAA",
+    }
+  ).addTo(eventMap);
   L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
     maxZoom: 19,
+    opacity: 0.8,
     attribution:
       '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
   }).addTo(eventMap);
@@ -152,6 +173,215 @@ function initEventMap() {
   }, 200);
 }
 
+/* ---------- Yardımcılar ---------- */
+
+function formatDate(ts) {
+  try {
+    if (!ts) return "";
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    return d.toLocaleDateString("tr-TR", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  } catch {
+    return "";
+  }
+}
+
+// "url||caption" şemasını çözer.
+function decodeImageString(str) {
+  if (!str) return { url: "", caption: "" };
+  const parts = String(str).split("||");
+  return {
+    url: (parts[0] || "").trim(),
+    caption: (parts[1] || "").trim(),
+  };
+}
+
+// {url, caption} nesnesini tek stringe encode eder.
+function encodeImageString(obj) {
+  const url = (obj.url || "").trim();
+  const caption = (obj.caption || "").trim();
+  if (!url) return "";
+  if (!caption) return url;
+  return `${url}||${caption}`;
+}
+
+// Dinamik haber görsel satırı (yeni haber formu)
+function addNewsImageRow(initial = {}) {
+  const container = document.getElementById("news-images-rows");
+  if (!container) return;
+
+  const row = document.createElement("div");
+  row.className = "news-image-row";
+  row.style.display = "grid";
+  row.style.gridTemplateColumns = "minmax(0, 2.5fr) minmax(0, 2fr) auto";
+  row.style.gap = "6px";
+  row.style.marginTop = "6px";
+
+  const urlInput = document.createElement("input");
+  urlInput.type = "url";
+  urlInput.placeholder = "https://gorsel-linki...";
+  urlInput.className = "form-input news-image-url";
+  urlInput.value = initial.url || "";
+
+  const captionInput = document.createElement("input");
+  captionInput.type = "text";
+  captionInput.placeholder = "Örn: John Doe / Unsplash (Unsplash Lisansı)";
+  captionInput.className = "form-input news-image-caption";
+  captionInput.value = initial.caption || "";
+
+  const removeBtn = document.createElement("button");
+  removeBtn.type = "button";
+  removeBtn.textContent = "✕";
+  removeBtn.className = "btn-secondary";
+  removeBtn.style.padding = "4px 8px";
+  removeBtn.style.fontSize = "11px";
+  removeBtn.addEventListener("click", () => {
+    container.removeChild(row);
+  });
+
+  row.appendChild(urlInput);
+  row.appendChild(captionInput);
+  row.appendChild(removeBtn);
+  container.appendChild(row);
+}
+
+// Yeni haber formundaki satırlardan "url||caption" array'i üretir
+function readNewsImageRows() {
+  const container = document.getElementById("news-images-rows");
+  if (!container) return [];
+  const rows = Array.from(container.querySelectorAll(".news-image-row"));
+  const out = [];
+
+  rows.forEach((row) => {
+    const urlInput = row.querySelector(".news-image-url");
+    const captionInput = row.querySelector(".news-image-caption");
+    const url = urlInput?.value.trim();
+    const caption = captionInput?.value.trim() || "";
+    if (url) {
+      out.push(encodeImageString({ url, caption }));
+    }
+  });
+
+  return out;
+}
+
+// Haber düzenleme formu için dinamik satır
+function addEditNewsImageRow(initial = {}) {
+  const container = document.getElementById("edit-news-images-rows");
+  if (!container) return;
+
+  const row = document.createElement("div");
+  row.className = "edit-news-image-row";
+  row.style.display = "grid";
+  row.style.gridTemplateColumns = "minmax(0, 2.5fr) minmax(0, 2fr) auto";
+  row.style.gap = "6px";
+  row.style.marginTop = "6px";
+
+  const urlInput = document.createElement("input");
+  urlInput.type = "url";
+  urlInput.placeholder = "https://gorsel-linki...";
+  urlInput.className = "form-input edit-news-image-url";
+  urlInput.value = initial.url || "";
+
+  const captionInput = document.createElement("input");
+  captionInput.type = "text";
+  captionInput.placeholder = "Fotoğrafçı / Lisans bilgisi";
+  captionInput.className = "form-input edit-news-image-caption";
+  captionInput.value = initial.caption || "";
+
+  const removeBtn = document.createElement("button");
+  removeBtn.type = "button";
+  removeBtn.textContent = "✕";
+  removeBtn.className = "btn-secondary";
+  removeBtn.style.padding = "4px 8px";
+  removeBtn.style.fontSize = "11px";
+  removeBtn.addEventListener("click", () => {
+    container.removeChild(row);
+  });
+
+  row.appendChild(urlInput);
+  row.appendChild(captionInput);
+  row.appendChild(removeBtn);
+  container.appendChild(row);
+}
+
+// Düzenleme formundaki satırlardan "url||caption" listesi üret
+function readEditNewsImageRows() {
+  const container = document.getElementById("edit-news-images-rows");
+  if (!container) return [];
+  const rows = Array.from(container.querySelectorAll(".edit-news-image-row"));
+  const out = [];
+
+  rows.forEach((row) => {
+    const urlInput = row.querySelector(".edit-news-image-url");
+    const captionInput = row.querySelector(".edit-news-image-caption");
+    const url = urlInput?.value.trim();
+    const caption = captionInput?.value.trim() || "";
+    if (url) {
+      out.push(encodeImageString({ url, caption }));
+    }
+  });
+
+  return out;
+}
+
+function setupNewNewsImageRows() {
+  const container = document.getElementById("news-images-rows");
+  const addBtn = document.getElementById("news-add-image-row");
+  if (!container) return;
+
+  // hiç satır yoksa 1 tane aç
+  if (!container.children.length) {
+    addNewsImageRow({ url: "", caption: "" });
+  }
+
+  if (addBtn && !addBtn._lareneaBound) {
+    addBtn._lareneaBound = true;
+    addBtn.addEventListener("click", () => {
+      addNewsImageRow({ url: "", caption: "" });
+    });
+  }
+}
+
+function formatDateInputValue(ts) {
+  try {
+    if (!ts) return "";
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  } catch {
+    return "";
+  }
+}
+
+// "14:30" / "14:30:00" → "14:30"
+function formatTimeInputValue(value) {
+  if (!value) return "";
+  return String(value).slice(0, 5);
+}
+
+function parseImageUrls(text) {
+  if (!text) return [];
+  return text
+    .split(/[\n,]+/)
+    .map((s) => s.trim())
+    .filter((s) => !!s);
+}
+
+function escapeHtml(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 /* ---------- Auth state ---------- */
 
 onAuthStateChanged(auth, (user) => {
@@ -168,6 +398,7 @@ onAuthStateChanged(auth, (user) => {
     );
 
     initEventMap();
+    setupNewNewsImageRows();
   } else {
     if (adminView) adminView.style.display = "none";
     if (loginView) loginView.style.display = "flex";
@@ -208,58 +439,6 @@ if (logoutLink) {
   });
 }
 
-/* ---------- Yardımcılar ---------- */
-
-function formatDate(ts) {
-  try {
-    if (!ts) return "";
-    const d = ts.toDate ? ts.toDate() : new Date(ts);
-    return d.toLocaleDateString("tr-TR", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
-  } catch {
-    return "";
-  }
-}
-
-function formatDateInputValue(ts) {
-  try {
-    if (!ts) return "";
-    const d = ts.toDate ? ts.toDate() : new Date(ts);
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return `${y}-${m}-${day}`;
-  } catch {
-    return "";
-  }
-}
-
-// "14:30" / "14:30:00" → "14:30"
-function formatTimeInputValue(value) {
-  if (!value) return "";
-  return String(value).slice(0, 5);
-}
-
-function parseImageUrls(text) {
-  if (!text) return [];
-  return text
-    .split(/[\n,]+/)
-    .map((s) => s.trim())
-    .filter((s) => !!s);
-}
-
-function escapeHtml(str) {
-  if (!str) return "";
-  return String(str)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
 /* ---------- YENİ HABER KAYDET ---------- */
 
 if (newNewsForm) {
@@ -272,8 +451,11 @@ if (newNewsForm) {
     const summary = newsSummaryInput.value.trim();
     const content = newsContentInput.value.trim();
     const isFeatured = newsFeaturedInput.value === "true";
-    const manualUrls = parseImageUrls(newsImagesUrlsInput.value);
-    const images = manualUrls;
+
+    const sourceUrl = newsSourceUrlInput?.value.trim() || "";
+    const sourceLabel = newsSourceLabelInput?.value.trim() || "";
+
+    const images = readNewsImageRows(); // dinamik satırlardan
 
     if (!title) {
       if (newsSaveStatus) newsSaveStatus.textContent = "Başlık zorunludur.";
@@ -281,7 +463,7 @@ if (newNewsForm) {
     }
 
     try {
-      await addDoc(collection(db, "news"), {
+      await addDoc(refNews, {
         title,
         category: category || null,
         summary: summary || null,
@@ -289,6 +471,8 @@ if (newNewsForm) {
         isFeatured,
         isVisible: true,
         images: images.length ? images : null,
+        sourceUrl: sourceUrl || null,
+        sourceLabel: sourceLabel || null,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
@@ -296,9 +480,20 @@ if (newNewsForm) {
       if (newsSaveStatus) newsSaveStatus.textContent = "✔ Haber kaydedildi.";
       newNewsForm.reset();
       newsFeaturedInput.value = "false";
+
+      // Kaynak alanlarını ve görsel satırlarını sıfırla
+      if (newsSourceUrlInput) newsSourceUrlInput.value = "";
+      if (newsSourceLabelInput) newsSourceLabelInput.value = "";
+
+      if (newsImagesRowsContainer) {
+        newsImagesRowsContainer.innerHTML = "";
+        addNewsImageRow({ url: "", caption: "" });
+      }
+
       setTimeout(() => {
         if (newsSaveStatus) newsSaveStatus.textContent = "";
       }, 2000);
+
       await loadNewsList();
     } catch (err) {
       console.error("News save error:", err);
@@ -327,6 +522,7 @@ if (newEventForm) {
 
     const startTime = eventStartTimeInput?.value.trim() || "";
     const endTime = eventEndTimeInput?.value.trim() || "";
+    const eventUrl = eventLinkUrlInput?.value.trim() || ""; // etkinlik linki
 
     if (!title) {
       if (eventSaveStatus)
@@ -394,6 +590,7 @@ if (newEventForm) {
         priceType,
         lat,
         lng,
+        eventUrl: eventUrl || null,
         isVisible: true,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
@@ -427,7 +624,6 @@ async function loadNewsList() {
       '<p style="opacity:.7;">Bir habere tıkladığında detayları burada düzenleyebileceksin.</p>';
   }
 
-  const refNews = collection(db, "news");
   const qNews = query(refNews, orderBy("createdAt", "desc"));
   const snap = await getDocs(qNews);
 
@@ -482,8 +678,8 @@ function showNewsDetail(index) {
   const item = newsCache[index];
   if (!item || !newsDetailEl) return;
 
-  const images = Array.isArray(item.images) ? item.images : [];
   const isVisible = !(item.isVisible === false || item.isVisible === "false");
+  const images = Array.isArray(item.images) ? item.images : [];
 
   newsDetailEl.innerHTML = `
     <h3 style="margin-top:0;">Haberi Düzenle</h3>
@@ -536,17 +732,40 @@ function showNewsDetail(index) {
         )}</textarea>
       </label>
 
-      <label class="form-label">
-        Görsel Linkleri
-        <textarea id="edit-news-images-urls" class="form-input" rows="3" placeholder="Her satıra bir URL yaz">${escapeHtml(
-          images.join("\n")
-        )}</textarea>
+      <label class="form-label form-label-full">
+        Kaynak
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:4px;">
+          <input
+            type="url"
+            id="edit-news-source-url"
+            class="form-input"
+            value="${escapeHtml(item.sourceUrl || "")}"
+            placeholder="Kaynak bağlantısı (https://…)"
+            style="flex:2 1 180px;"
+          />
+          <input
+            type="text"
+            id="edit-news-source-label"
+            class="form-input"
+            value="${escapeHtml(item.sourceLabel || "")}"
+            placeholder="Kaynak adı / açıklaması"
+            style="flex:3 1 180px;"
+          />
+        </div>
       </label>
 
-      <div style="font-size:12px;margin-top:6px;opacity:.85;">
-        <div><strong>Görseller:</strong></div>
-        <div id="edit-news-images-preview" style="display:flex;flex-direction:column;gap:4px;margin-top:4px;"></div>
-      </div>
+      <label class="form-label form-label-full">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+          <span>Görseller</span>
+          <button type="button" id="edit-news-add-image-row" class="btn-secondary" style="font-size:11px;padding:3px 8px;">
+            + Görsel ekle
+          </button>
+        </div>
+        <div id="edit-news-images-rows"></div>
+        <div style="font-size:11px;opacity:.75;margin-top:4px;">
+          Her görsel için link ve açıklama (fotoğrafçı, lisans vb.) girebilirsin.
+        </div>
+      </label>
 
       <div style="margin-top:10px;">
         <button type="button" id="edit-news-save-btn" class="btn-primary">
@@ -566,36 +785,37 @@ function showNewsDetail(index) {
   const editVisibleInput = document.getElementById("edit-news-visible");
   const editSummaryInput = document.getElementById("edit-news-summary");
   const editContentInput = document.getElementById("edit-news-content");
-  const editImagesUrlsInput = document.getElementById("edit-news-images-urls");
-  const editImagesPreview = document.getElementById("edit-news-images-preview");
+  const editSourceUrlInput = document.getElementById("edit-news-source-url");
+  const editSourceLabelInput = document.getElementById(
+    "edit-news-source-label"
+  );
+
+  const editImagesRows = document.getElementById("edit-news-images-rows");
+  const editAddImageRowBtn = document.getElementById("edit-news-add-image-row");
+
   const editSaveBtn = document.getElementById("edit-news-save-btn");
   const editDeleteBtn = document.getElementById("edit-news-delete-btn");
   const editSaveStatus = document.getElementById("edit-news-save-status");
 
-  function renderEditImagesPreview() {
-    if (!editImagesPreview) return;
-    editImagesPreview.innerHTML = "";
-
-    const urls = parseImageUrls(editImagesUrlsInput.value);
-    if (!urls.length) {
-      editImagesPreview.textContent = "Bu haber için kayıtlı görsel yok.";
-      return;
+  // Mevcut görselleri "url||caption" formatından çözüp satır oluştur
+  const existingImages = Array.isArray(item.images) ? item.images : [];
+  if (editImagesRows) {
+    if (existingImages.length) {
+      existingImages.forEach((imgStr) => {
+        const decoded = decodeImageString(imgStr);
+        addEditNewsImageRow(decoded);
+      });
+    } else {
+      addEditNewsImageRow({ url: "", caption: "" });
     }
-
-    urls.forEach((url) => {
-      const span = document.createElement("span");
-      span.textContent = url;
-      span.style.display = "inline-block";
-      span.style.maxWidth = "280px";
-      span.style.overflow = "hidden";
-      span.style.textOverflow = "ellipsis";
-      span.style.whiteSpace = "nowrap";
-      editImagesPreview.appendChild(span);
-    });
   }
 
-  renderEditImagesPreview();
-  editImagesUrlsInput.addEventListener("input", renderEditImagesPreview);
+  if (editAddImageRowBtn && !editAddImageRowBtn._lareneaBound) {
+    editAddImageRowBtn._lareneaBound = true;
+    editAddImageRowBtn.addEventListener("click", () => {
+      addEditNewsImageRow({ url: "", caption: "" });
+    });
+  }
 
   editSaveBtn.addEventListener("click", async () => {
     if (editSaveStatus) editSaveStatus.textContent = "Kaydediliyor...";
@@ -606,8 +826,9 @@ function showNewsDetail(index) {
     const content = editContentInput.value.trim();
     const isFeatured = editFeaturedInput.value === "true";
     const isVisibleNew = editVisibleInput.value === "true";
-    const manualUrls = parseImageUrls(editImagesUrlsInput.value);
-    const imagesFinal = manualUrls;
+    const sourceUrl = editSourceUrlInput?.value.trim() || "";
+    const sourceLabel = editSourceLabelInput?.value.trim() || "";
+    const imagesFinal = readEditNewsImageRows();
 
     if (!title) {
       if (editSaveStatus) editSaveStatus.textContent = "Başlık boş olamaz.";
@@ -624,6 +845,8 @@ function showNewsDetail(index) {
         isFeatured,
         isVisible: isVisibleNew,
         images: imagesFinal.length ? imagesFinal : null,
+        sourceUrl: sourceUrl || null,
+        sourceLabel: sourceLabel || null,
         updatedAt: serverTimestamp(),
       });
 
@@ -808,6 +1031,17 @@ function showEventDetail(index) {
         )}</textarea>
       </label>
 
+      <label class="form-label form-label-full">
+        Etkinlik Linki
+        <input
+          type="url"
+          id="edit-event-link-url"
+          class="form-input"
+          value="${escapeHtml(item.eventUrl || "")}"
+          placeholder="Etkinliğin web sayfası (varsa)"
+        />
+      </label>
+
       <label class="form-label">
         Enlem (lat)
         <input type="text" id="edit-event-lat" class="form-input" value="${
@@ -863,6 +1097,8 @@ function showEventDetail(index) {
   const editLocationInput = document.getElementById("edit-event-location");
   const editPriceTypeInput = document.getElementById("edit-event-price-type");
   const editAddressInput = document.getElementById("edit-event-address");
+  const editEventLinkInput = document.getElementById("edit-event-link-url");
+
   const editLatInput = document.getElementById("edit-event-lat");
   const editLngInput = document.getElementById("edit-event-lng");
   const editDescriptionInput = document.getElementById(
@@ -914,6 +1150,7 @@ function showEventDetail(index) {
     const newPriceType = editPriceTypeInput.value || "free";
     const newAddress = editAddressInput.value.trim();
     const description = editDescriptionInput.value.trim();
+    const eventUrl = editEventLinkInput.value.trim();
     const isVisibleNew = editVisibleInput.value === "true";
     const manualUrls = parseImageUrls(editImagesUrlsInput.value);
     const imagesFinal = manualUrls;
@@ -978,6 +1215,7 @@ function showEventDetail(index) {
         description: description || null,
         images: imagesFinal.length ? imagesFinal : null,
         priceType: newPriceType,
+        eventUrl: eventUrl || null,
         isVisible: isVisibleNew,
         lat,
         lng,

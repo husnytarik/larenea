@@ -12,6 +12,14 @@ function formatDate(ts) {
   });
 }
 
+// "url||caption" veya düz string → sadece URL kısmını döndür
+function extractImageUrl(entry) {
+  if (!entry) return "";
+  const str = String(entry);
+  const [urlPart] = str.split("||");
+  return (urlPart || "").trim();
+}
+
 // Modal kapatma davranışını ayarlar (ESC, arka plan, X butonu)
 export function setupEventModal() {
   const modal = document.getElementById("event-modal");
@@ -41,11 +49,12 @@ export function setupEventModal() {
  * Modalı açmak için ortak fonksiyon.
  * Beklenen alanlar:
  *  - title
- *  - images (array) => [0] poster
+ *  - images (array) => [0] poster ("url" veya "url||caption")
  *  - startDate, endDate (Timestamp/Date/string)
  *  - locationName
  *  - address
  *  - lat, lng (number, opsiyonel)
+ *  - eventUrl (opsiyonel – etkinlik sayfası linki)
  */
 export function openEventModal(ev) {
   const modal = document.getElementById("event-modal");
@@ -58,9 +67,24 @@ export function openEventModal(ev) {
   const locationEl = modal.querySelector("#event-modal-location");
   const addressEl = modal.querySelector("#event-modal-address");
   const mapBtn = modal.querySelector("#event-modal-map-btn");
+  const linkBtn = modal.querySelector("#event-modal-link-btn");
+
+  // Etkinlik linki butonu
+  if (linkBtn) {
+    const url = ev.eventUrl || ev.link || "";
+    if (url) {
+      linkBtn.style.display = "";
+      linkBtn.onclick = () => {
+        window.open(url, "_blank", "noopener");
+      };
+    } else {
+      linkBtn.style.display = "none";
+      linkBtn.onclick = null;
+    }
+  }
 
   const images = Array.isArray(ev.images) ? ev.images : [];
-  const posterUrl = images.length ? images[0] : null;
+  const posterUrl = images.length ? extractImageUrl(images[0]) : null;
 
   // Görsel
   if (posterUrl && imgEl && imgWrapper) {
@@ -73,6 +97,27 @@ export function openEventModal(ev) {
       imgEl.src = "";
       imgEl.alt = "";
     }
+  }
+
+  // Görseller altına caption ekleme
+  function renderImageCaptions(images = []) {
+    return images
+      .map((img) => {
+        if (typeof img !== "string") return "";
+        const [url, caption] = img.split("||");
+        if (!url) return "";
+        const safeUrl = escapeHtml(url);
+        const safeCaption = escapeHtml(caption || "");
+
+        return `
+        <div class="footer-bottom" style="text-align:left;">
+          <a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="footer-link">
+            ${safeCaption}
+          </a>
+        </div>
+      `;
+      })
+      .join("");
   }
 
   // Başlık

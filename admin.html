@@ -123,14 +123,57 @@
             </label>
 
             <label class="form-label form-label-full">
-              Görsel Linkleri
-              <textarea
-                id="news-images-urls"
-                class="form-input"
-                rows="2"
-                placeholder="Her satıra bir görsel URL'si yazabilirsin..."
-              ></textarea>
+              Kaynak
+              <div
+                style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:4px;"
+              >
+                <input
+                  type="url"
+                  id="news-source-url"
+                  class="form-input"
+                  placeholder="Kaynak bağlantısı (https://…)"
+                  style="flex:2 1 180px;"
+                />
+                <input
+                  type="text"
+                  id="news-source-label"
+                  class="form-input"
+                  placeholder="Kaynak adı / açıklaması (örn: Antiquity Journal, 2025)"
+                  style="flex:3 1 180px;"
+                />
+              </div>
             </label>
+
+
+            <label class="form-label form-label-full">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  gap: 8px;
+                "
+              >
+                <span>Görseller</span>
+                <button
+                  type="button"
+                  id="news-add-image-row"
+                  class="btn-secondary"
+                  style="font-size: 11px; padding: 3px 8px"
+                >
+                  + Görsel ekle
+                </button>
+              </div>
+
+              <div id="news-images-rows"></div>
+              <div style="font-size: 11px; opacity: 0.75; margin-top: 4px">
+                Her satır için hem görsel linkini hem de fotoğrafçı / lisans
+                bilgisini yazabilirsin.
+              </div>
+            </label>
+
+            <label class="form-label">
+            
 
             <div
               class="form-label form-label-full"
@@ -218,11 +261,25 @@
               />
             </label>
 
-            <label>Saat (Başlangıç)</label>
-            <input type="time" id="startTime" name="startTime" />
+            <label class="form-label">
+              Saat (Başlangıç)
+              <input
+                type="time"
+                id="event-start-time"
+                name="startTime"
+                class="form-input"
+              />
+            </label>
 
-            <label>Saat (Bitiş)</label>
-            <input type="time" id="endTime" name="endTime" />
+            <label class="form-label">
+              Saat (Bitiş)
+              <input
+                type="time"
+                id="event-end-time"
+                name="endTime"
+                class="form-input"
+              />
+            </label>
 
             <label class="form-label">
               Etkinlik Sahibi (opsiyonel)
@@ -260,6 +317,16 @@
                 rows="2"
                 placeholder="Haritada gözüksün diye tam adres (sokak, numara, ilçe, il)..."
               ></textarea>
+            </label>
+
+            <label class="form-label form-label-full">
+              Etkinlik Linki (opsiyonel)
+              <input
+                type="url"
+                id="event-link-url"
+                class="form-input"
+                placeholder="Etkinliğin web sayfası (varsa)"
+              />
             </label>
 
             <!-- HARİTA: buraya tıklayıp marker ile konum seçiyorsun -->

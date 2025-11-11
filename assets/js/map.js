@@ -8,7 +8,8 @@ import {
   orderBy,
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-import { setupEventModal, openEventModal } from "./eventModal.js";
+// NOT: Artık bu sayfada tam ekran modal kullanmıyoruz
+// import { setupEventModal, openEventModal } from "./eventModal.js";
 
 /* Yardımcı: tarih formatı */
 function formatDate(ts) {
@@ -19,6 +20,14 @@ function formatDate(ts) {
     month: "short",
     year: "numeric",
   });
+}
+
+// "url||caption" veya düz string → sadece URL
+function extractImageUrl(entry) {
+  if (!entry) return "";
+  const str = String(entry);
+  const [urlPart] = str.split("||");
+  return (urlPart || "").trim();
 }
 
 // isVisible alanı: false / "false" ise gizli kabul et
@@ -39,6 +48,71 @@ function escapeHtml(str) {
     .replace(/"/g, "&quot;");
 }
 
+/**
+ * Modal ile aynı mantıkta ama haritada küçük kart olarak gözükecek HTML
+ */
+function buildEventPopupHtml(ev) {
+  const title = escapeHtml(ev.title || "Etkinlik");
+  const locationName = ev.locationName ? escapeHtml(ev.locationName) : "";
+  const address = ev.address ? escapeHtml(ev.address) : "";
+
+  // Görsel
+  const rawImages = Array.isArray(ev.images) ? ev.images : [];
+  const posterUrl = rawImages.length ? extractImageUrl(rawImages[0]) : null;
+
+  // Tarih + saat
+  const startStr = ev.startDate ? formatDate(ev.startDate) : "";
+  const endStr = ev.endDate ? formatDate(ev.endDate) : "";
+
+  let dateText = "";
+  if (startStr && endStr && startStr !== endStr) {
+    dateText = `${startStr} – ${endStr}`;
+  } else {
+    dateText = startStr || endStr || "";
+  }
+
+  const startTime = ev.startTime || "";
+  const endTime = ev.endTime || "";
+
+  if (startTime && endTime) {
+    dateText += ` (${startTime} – ${endTime})`;
+  } else if (startTime) {
+    dateText += ` (${startTime})`;
+  }
+
+  const dateHtml = dateText
+    ? `<div class="event-map-card-date">${escapeHtml(dateText)}</div>`
+    : "";
+
+  const locationHtml =
+    locationName || address
+      ? `
+  <div class="event-map-card-location">
+    ${locationName ? `<span>${locationName}</span>` : ""}
+    ${locationName && address ? " · " : ""}
+    ${address ? `<span>${address}</span>` : ""}
+  </div>`
+      : "";
+
+  const imageHtml = posterUrl
+    ? `
+  <div class="event-map-card-media">
+    <img src="${posterUrl}" alt="${title}" />
+  </div>`
+    : "";
+
+  return `
+    <div class="event-map-card">
+      ${imageHtml}
+      <div class="event-map-card-body">
+        <h3 class="event-map-card-title">${title}</h3>
+        ${dateHtml}
+        ${locationHtml}
+      </div>
+    </div>
+  `;
+}
+
 /* Harita init */
 function initMap() {
   const mapEl = document.getElementById("events-map");
@@ -46,11 +120,21 @@ function initMap() {
 
   const map = L.map("events-map", {
     scrollWheelZoom: true,
-    zoomControl: true,
+    zoomControl: false,
   }).setView([39.0, 35.0], 6);
+  map.attributionControl.remove(); // Sağ alttaki varsayılan metni kaldır
+  L.tileLayer(
+    "https://services.arcgisonline.com/arcgis/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}",
+    {
+      opacity: 0.6,
+      maxZoom: 19,
+      attribution: "© Esri — Source: Esri, USGS, NOAA",
+    }
+  ).addTo(map);
 
   L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
     maxZoom: 19,
+    opacity: 0.8,
     attribution:
       '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
   }).addTo(map);
@@ -63,8 +147,8 @@ async function loadEventsOnMap() {
   const map = initMap();
   if (!map) return;
 
-  // Ortak modal kapatma davranışlarını kur
-  setupEventModal();
+  // Bu sayfada tam ekran modal kullanılmıyor
+  // setupEventModal();
 
   const listContainer = document.getElementById("map-events-list");
   if (listContainer) {
@@ -102,6 +186,7 @@ async function loadEventsOnMap() {
 
   const boundsLatLngs = [];
   const itemsHtml = [];
+  const markersById = new Map();
 
   events.forEach((ev) => {
     const lat = ev.lat;
@@ -120,21 +205,22 @@ async function loadEventsOnMap() {
     }).addTo(map);
 
     marker._lareneaId = ev.id;
+    markersById.set(ev.id, marker);
 
-    // POPUP (label) – tekrar gelsin diye bunu koruyoruz
-    const popupHtml = `
-      <div class="map-popup">
-        <strong>${escapeHtml(title)}</strong><br/>
-        <span>${dateStr}${
-      locationName ? " – " + escapeHtml(locationName) : ""
-    }</span>
-      </div>
-    `;
-    marker.bindPopup(popupHtml);
+    // Popup: modalın küçük kartı gibi
+    const popupHtml = buildEventPopupHtml(ev);
+    marker.bindPopup(popupHtml, {
+      className: "event-map-popup",
+      maxWidth: 260,
+      closeButton: true,
+      autoPan: true,
+    });
 
-    // Markere tıklayınca modal da açılsın
+    // Marker tıklanınca sadece harita popup'ı aç – modal yok
     marker.on("click", () => {
-      openEventModal(ev);
+      const latLng = [lat, lng];
+      map.setView(latLng, 13, { animate: true });
+      marker.openPopup();
     });
 
     // Bounds
@@ -164,7 +250,7 @@ async function loadEventsOnMap() {
     map.fitBounds(boundsLatLngs, { padding: [40, 40] });
   }
 
-  // Liste tıklamaları → marker’a zoom + modal
+  // Liste tıklamaları → marker’a zoom + popup
   if (listContainer) {
     listContainer.innerHTML = itemsHtml.join("");
 
@@ -180,7 +266,10 @@ async function loadEventsOnMap() {
         const latLng = [ev.lat, ev.lng];
         map.setView(latLng, 13, { animate: true });
 
-        openEventModal(ev);
+        const marker = markersById.get(id);
+        if (marker) {
+          marker.openPopup();
+        }
       });
     });
   }

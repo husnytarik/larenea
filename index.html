@@ -15,13 +15,13 @@
         </div>
         <nav class="main-nav">
           <a href="index.html" class="active">Ana Sayfa</a>
-          <a href="event.html">Etkinlikler</a>
+          <a href="harita.html">Etkinlikler</a>
           <a href="#">Hakkında</a>
           <a href="#">Bize Yazın</a>
         </nav>
       </div>
       <div class="news-ticker">
-        <div class="ticker-label">Son Dakika</div>
+        <div class="ticker-label">Haberler</div>
         <div class="ticker-track">
           <div class="ticker-items" id="ticker-items"></div>
         </div>
@@ -36,6 +36,11 @@
           <h2 class="card-title">Yükleniyor...</h2>
           <div class="card-meta"></div>
           <p class="card-text"></p>
+          <p
+            class="card-meta card-meta-source"
+            id="featured-source"
+            style="display: none"
+          ></p>
           <a class="card-link" href="#">Haberi Oku</a>
         </article>
 
@@ -95,6 +100,13 @@
           <div class="event-modal-actions">
             <button type="button" id="event-modal-map-btn" class="btn-primary">
               Haritalarda aç
+            </button>
+            <button
+              type="button"
+              id="event-modal-link-btn"
+              class="btn-secondary"
+            >
+              Etkinlik sayfasına git
             </button>
           </div>
         </div>

@@ -1,16 +1,20 @@
 // assets/js/home.js
+//
+// Ana sayfa: haberler + slider mantığı
+// - Firestore'dan "news" koleksiyonunu çeker
+// - Öne çıkan (featured) haberi büyük kartta gösterir
+// - Diğer birkaç haberi küçük kartlarda listeler
+// - Çok görselli haberlerde slider + her görsel için caption/link gösterir
 
 import { db } from "./firebase.js";
-
 import {
   collection,
   query,
   orderBy,
   getDocs,
-  limit,
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-import { setupEventModal, openEventModal } from "./eventModal.js";
+import { setupEventModal } from "./eventModal.js";
 
 /* ---------- Yardımcılar ---------- */
 
@@ -24,17 +28,66 @@ function formatDate(ts) {
   });
 }
 
-// isVisible alanı: false / "false" ise gizli kabul et
-function isRecordVisible(item) {
-  if (!item || typeof item !== "object") return true;
-  const v = item.isVisible;
-  if (v === false || v === "false") return false;
-  return true;
+function escapeHtml(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
-/* ---------- SLIDER ORTAK FONKSİYONU ---------- */
+/**
+ * Firestore'dan gelen görsel stringini çözer.
+ * Desteklenen formatlar:
+ *   - "https://...jpg"
+ *   - "https://...jpg||John Doe / Unsplash (Lisans bilgisi)"
+ */
+function decodeImageEntry(entry) {
+  if (!entry) return null;
+  const str = String(entry);
+  const [urlPart, captionPart] = str.split("||");
+  const url = (urlPart || "").trim();
+  if (!url) return null;
+  const caption = (captionPart || "").trim();
+  return { url, caption };
+}
 
-function setupSlider(container) {
+/**
+ * Tek bir haber için "Kaynak" HTML'i üretir.
+ * - Hem URL hem label varsa → label metni tıklanabilir link olur.
+ * - Sadece URL varsa → URL metin olarak gösterilir.
+ */
+function buildSourceHtml(news) {
+  const url = (news.sourceUrl || "").trim();
+  const rawLabel = (news.sourceLabel || "").trim();
+
+  if (!url && !rawLabel) return "";
+
+  const label = rawLabel || url;
+  const safeUrl = escapeHtml(url || "#");
+  const safeLabel = escapeHtml(label);
+
+  return `
+    <div class="footer-bottom">
+      <a href="${safeUrl}"
+         target="_blank"
+         rel="noopener noreferrer"
+         class="footer-link">
+        ${safeLabel}
+      </a>
+    </div>
+  `;
+}
+
+/* ---------- Slider ---------- */
+
+/**
+ * Her slider için ortak davranış.
+ * - container: .slider div'i (içinde .slides img, .slider-dots, butonlar var)
+ * - captionBox: Görsel açıklamasının yazılacağı element (slider'ın DIŞINDA)
+ */
+function setupSlider(container, captionBox) {
   if (!container) return;
 
   const slides = Array.from(container.querySelectorAll(".slides img"));
@@ -42,56 +95,77 @@ function setupSlider(container) {
   const prev = container.querySelector(".slider-btn.prev");
   const next = container.querySelector(".slider-btn.next");
 
-  const total = slides.length;
-  if (total <= 1) return;
+  if (!slides.length) return;
 
   let index = 0;
 
-  function showSlide(i) {
-    index = (i + total) % total;
-    slides.forEach((img, n) => img.classList.toggle("active", n === index));
-    dots.forEach((d, n) => d.classList.toggle("active", n === index));
+  function updateCaption() {
+    if (!captionBox) return;
+    const current = slides[index];
+    const caption = current.dataset.caption || "";
+    const link = current.dataset.link || current.src || "";
+
+    if (!caption && !link) {
+      captionBox.innerHTML = "";
+      return;
+    }
+
+    const safeLink = escapeHtml(link);
+    const safeCaption = escapeHtml(caption || link);
+
+    captionBox.innerHTML = `
+      <div class="footer-bottom">
+        <a href="${safeLink}"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="footer-link">
+          ${safeCaption}
+        </a>
+      </div>
+    `;
   }
 
-  if (prev) {
+  function showSlide(i) {
+    index = (i + slides.length) % slides.length;
+    slides.forEach((img, n) => img.classList.toggle("active", n === index));
+    dots.forEach((d, n) => d.classList.toggle("active", n === index));
+    updateCaption();
+  }
+
+  // Butonlar
+  if (prev)
     prev.addEventListener("click", (e) => {
       e.stopPropagation();
       showSlide(index - 1);
     });
-  }
 
-  if (next) {
+  if (next)
     next.addEventListener("click", (e) => {
       e.stopPropagation();
       showSlide(index + 1);
     });
-  }
 
-  dots.forEach((dot) => {
+  // Dots
+  dots.forEach((dot, iDot) => {
     dot.addEventListener("click", (e) => {
       e.stopPropagation();
-      const i = Number(dot.dataset.index) || 0;
-      showSlide(i);
+      showSlide(iDot);
     });
   });
 
+  // Slide alanına tıklanarak sağ/sol gezinme
   container.addEventListener("click", (e) => {
     if (e.target.closest(".slider-btn") || e.target.closest(".dot")) return;
-
     const rect = container.getBoundingClientRect();
     const x = e.clientX - rect.left;
-
-    if (x < rect.width / 2) {
-      showSlide(index - 1);
-    } else {
-      showSlide(index + 1);
-    }
+    showSlide(x < rect.width / 2 ? index - 1 : index + 1);
   });
 
+  // Başlangıç
   showSlide(0);
 }
 
-/* ---------- HABERLER ---------- */
+/* ---------- Haberler ---------- */
 
 async function loadNews() {
   const newsRef = collection(db, "news");
@@ -99,48 +173,50 @@ async function loadNews() {
   const snap = await getDocs(q);
 
   const allNews = [];
-  snap.forEach((doc) => allNews.push({ id: doc.id, ...doc.data() }));
+  snap.forEach((docSnap) => {
+    allNews.push({ id: docSnap.id, ...docSnap.data() });
+  });
 
-  if (!allNews.length) return;
-
-  const visibleNews = allNews.filter(isRecordVisible);
+  // isVisible === false ise gösterme
+  const visibleNews = allNews.filter((n) => n.isVisible !== false);
   if (!visibleNews.length) return;
 
   const featured = visibleNews.find((n) => n.isFeatured) || visibleNews[0];
-  const others = visibleNews.filter((n) => n.id !== featured.id).slice(0, 6); // küçük kartlar
+  const others = visibleNews.filter((n) => n.id !== featured.id).slice(0, 6);
 
   renderFeaturedCard(featured);
   renderSmallNews(others);
-  renderTicker(visibleNews);
 }
 
-// -------- Manşet kartı --------
-function renderFeaturedCard(featured) {
-  const featuredCard = document.querySelector(".card-featured");
-  if (!featuredCard || !featured) return;
+/**
+ * Manşet haberi kartını doldurur.
+ */
+function renderFeaturedCard(news) {
+  const card = document.querySelector(".card-featured");
+  if (!card || !news) return;
 
-  const images = Array.isArray(featured.images) ? featured.images : [];
+  // Görseller
+  const images = (Array.isArray(news.images) ? news.images : [])
+    .map(decodeImageEntry)
+    .filter(Boolean);
 
   if (images.length) {
-    let media = featuredCard.querySelector(".card-media");
-    if (!media) {
-      media = document.createElement("div");
-      media.className = "card-media slider";
-      featuredCard.prepend(media);
-    } else {
-      media.classList.add("slider");
-    }
-
-    featuredCard.classList.add("has-media");
+    const media = document.createElement("div");
+    media.className = "card-media slider";
 
     media.innerHTML = `
       <div class="slides">
         ${images
           .map(
-            (url, i) =>
-              `<img src="${url}" class="${i === 0 ? "active" : ""}" alt="${
-                featured.title || ""
-              }">`
+            (img, i) => `
+              <img
+                src="${escapeHtml(img.url)}"
+                data-caption="${escapeHtml(img.caption)}"
+                data-link="${escapeHtml(img.url)}"
+                class="${i === 0 ? "active" : ""}"
+                alt="${escapeHtml(news.title || "")}"
+              />
+            `
           )
           .join("")}
       </div>
@@ -149,78 +225,100 @@ function renderFeaturedCard(featured) {
       <div class="slider-dots">
         ${images
           .map(
-            (_, i) =>
-              `<span class="dot ${
+            (_, i) => `
+              <span class="dot ${
                 i === 0 ? "active" : ""
-              }" data-index="${i}"></span>`
+              }" data-index="${i}"></span>
+            `
           )
           .join("")}
       </div>
     `;
 
-    setupSlider(media);
+    // Manşet kartın en başına görsel slider'ı ekle
+    card.prepend(media);
+
+    // Caption için slider'ın DIŞINA kutu koy (dots ile çakışmasın)
+    const captionBox = document.createElement("div");
+    captionBox.className = "slider-caption";
+    // card-media'dan hemen sonra yerleştir
+    card.insertBefore(captionBox, media.nextSibling);
+
+    setupSlider(media, captionBox);
+    card.classList.add("has-media");
   }
 
-  const tagEl = featuredCard.querySelector(".card-tag");
-  const titleEl = featuredCard.querySelector(".card-title");
-  const metaEl = featuredCard.querySelector(".card-meta");
-  const textEl = featuredCard.querySelector(".card-text");
-  const linkEl = featuredCard.querySelector(".card-link");
+  // Metinler
+  const tagEl = card.querySelector(".card-tag");
+  const titleEl = card.querySelector(".card-title");
+  const metaEl = card.querySelector(".card-meta");
+  const textEl = card.querySelector(".card-text");
+  const linkEl = card.querySelector(".card-link");
+  const sourceEl = card.querySelector(".card-meta-source");
 
-  if (tagEl) tagEl.textContent = featured.category || "Haber";
-  if (titleEl) titleEl.textContent = featured.title || "";
-  if (metaEl) metaEl.textContent = formatDate(featured.createdAt);
-  if (textEl) textEl.textContent = featured.summary || "";
+  if (tagEl) tagEl.textContent = news.category || "Haber";
+  if (titleEl) titleEl.textContent = news.title || "";
+  if (metaEl) metaEl.textContent = formatDate(news.createdAt);
+  if (textEl) textEl.textContent = news.summary || "";
   if (linkEl) {
-    linkEl.href = "haber.html?id=" + featured.id;
-    linkEl.textContent = "Haberi oku";
+    linkEl.href = "haber.html?id=" + news.id;
+    linkEl.textContent = "Haberi Oku";
+  }
+
+  if (sourceEl) {
+    const html = buildSourceHtml(news);
+    if (html) {
+      sourceEl.style.display = "";
+      sourceEl.innerHTML = html;
+    } else {
+      sourceEl.style.display = "none";
+      sourceEl.textContent = "";
+    }
   }
 }
 
-// -------- Küçük haber kartları --------
-function renderSmallNews(others) {
+/**
+ * Küçük haber kartlarını grid içerisine basar.
+ */
+function renderSmallNews(newsList) {
   const grid = document.querySelector(".news-grid-small");
   if (!grid) return;
 
   grid.innerHTML = "";
-  others.forEach((n, index) => {
-    const el = document.createElement("article");
-    el.className = "card card-small";
 
-    // 6 farklı kart tipi: wide, tall, highlight, compact, horizontal, overlay
-    const mod = index % 6;
+  newsList.forEach((news, index) => {
+    const card = document.createElement("article");
+    card.className = "card card-small";
 
-    if (mod === 0) {
-      el.classList.add("card-small--wide");
-    } else if (mod === 1) {
-      el.classList.add("card-small--tall");
-    } else if (mod === 2) {
-      el.classList.add("card-small--highlight");
-    } else if (mod === 3) {
-      el.classList.add("card-small--compact");
-    } else if (mod === 4) {
-      el.classList.add("card-small--horizontal");
-    } else if (mod === 5) {
-      el.classList.add("card-small--overlay");
-    }
+    // Basit layout çeşitliliği için sınıf ekleyebilirsin (opsiyonel)
+    const mod = index % 3;
+    if (mod === 1) card.classList.add("card-small--wide");
+    if (mod === 2) card.classList.add("card-small--tall");
 
-    const images = Array.isArray(n.images) ? n.images : [];
-
-    if (images.length > 0) {
-      el.classList.add("has-media");
-    }
+    // Görseller
+    const images = (Array.isArray(news.images) ? news.images : [])
+      .map(decodeImageEntry)
+      .filter(Boolean);
 
     let mediaHtml = "";
+    let captionAfterSlider = null;
+
     if (images.length > 1) {
+      // Çok görselli kart → slider
       mediaHtml = `
         <div class="card-media slider">
           <div class="slides">
             ${images
               .map(
-                (url, i) =>
-                  `<img src="${url}" class="${i === 0 ? "active" : ""}" alt="${
-                    n.title || ""
-                  }" loading="lazy">`
+                (img, i) => `
+                  <img
+                    src="${escapeHtml(img.url)}"
+                    data-caption="${escapeHtml(img.caption)}"
+                    data-link="${escapeHtml(img.url)}"
+                    class="${i === 0 ? "active" : ""}"
+                    alt="${escapeHtml(news.title || "")}"
+                  />
+                `
               )
               .join("")}
           </div>
@@ -229,198 +327,76 @@ function renderSmallNews(others) {
           <div class="slider-dots">
             ${images
               .map(
-                (_, i) =>
-                  `<span class="dot ${
+                (_, i) => `
+                  <span class="dot ${
                     i === 0 ? "active" : ""
-                  }" data-index="${i}"></span>`
+                  }" data-index="${i}"></span>
+                `
               )
               .join("")}
           </div>
         </div>
       `;
     } else if (images.length === 1) {
+      // Tek görsel → direkt img + caption link
+      const img = images[0];
       mediaHtml = `
         <div class="card-media">
-          <img src="${images[0]}" alt="${n.title || ""}" loading="lazy">
+          <img
+            src="${escapeHtml(img.url)}"
+            alt="${escapeHtml(news.title || "")}"
+          />
+        </div>
+      `;
+
+      // Slider yokken de altta küçük caption linki göster
+      captionAfterSlider = `
+        <div class="slider-caption">
+          <div class="footer-bottom">
+            <a href="${escapeHtml(img.url)}"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="footer-link">
+              ${escapeHtml(img.caption || img.url)}
+            </a>
+          </div>
         </div>
       `;
     }
 
-    el.innerHTML = `
+    card.innerHTML = `
       ${mediaHtml}
-      <div class="card-tag">${n.category || "Haber"}</div>
-      <h4 class="card-title">${n.title}</h4>
-      <p class="card-meta">${formatDate(n.createdAt)}</p>
-      <p class="card-text">${n.summary || ""}</p>
-      <a href="haber.html?id=${n.id}" class="card-link">Oku</a>
+      ${captionAfterSlider || ""}
+      <div class="card-tag">${escapeHtml(news.category || "Haber")}</div>
+      <h4 class="card-title">${escapeHtml(news.title || "")}</h4>
+      <p class="card-meta">${formatDate(news.createdAt)}</p>
+      <p class="card-text">${escapeHtml(news.summary || "")}</p>
+      ${buildSourceHtml(news)}
+      <a href="haber.html?id=${news.id}" class="card-link">Oku</a>
     `;
 
-    grid.appendChild(el);
+    grid.appendChild(card);
 
+    // Eğer slider varsa, ilgili captionBox'ı slider'ın DIŞINA bulup bağla
     if (images.length > 1) {
-      const sliderEl = el.querySelector(".card-media.slider");
-      setupSlider(sliderEl);
+      const sliderEl = card.querySelector(".card-media.slider");
+      const captionBox = document.createElement("div");
+      captionBox.className = "slider-caption";
+
+      // slider'dan hemen sonra yerleştir
+      card.insertBefore(captionBox, sliderEl.nextSibling);
+      setupSlider(sliderEl, captionBox);
     }
   });
-}
-
-// -------- Kayan yazı --------
-function renderTicker(news) {
-  const ticker = document.getElementById("ticker-items");
-  if (!ticker) return;
-
-  const visibles = news.filter(isRecordVisible);
-
-  ticker.innerHTML = visibles
-    .slice(0, 8)
-    .map((n) => `<a href="haber.html?id=${n.id}">${n.title || "Haber"}</a>`)
-    .join("");
-}
-
-/* ---------- ETKİNLİKLER ---------- */
-
-async function loadEvents() {
-  const evRef = collection(db, "events");
-  const q = query(evRef, orderBy("startDate", "asc"), limit(50));
-  const snap = await getDocs(q);
-
-  const eventsAll = [];
-  snap.forEach((doc) => eventsAll.push({ id: doc.id, ...doc.data() }));
-
-  // --- BUGÜNDEN ÖNCEKİ ETKİNLİKLERİ ELE ---
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-  const upcomingAll = eventsAll.filter((ev) => {
-    if (!ev.startDate) return false;
-
-    const d = ev.startDate?.toDate
-      ? ev.startDate.toDate()
-      : new Date(ev.startDate);
-
-    if (isNaN(d.getTime())) return false;
-
-    // Sadece bugünden sonraki (veya bugünkü) etkinlikler
-    return d >= today;
-  });
-
-  // isVisible filtresi
-  const events = upcomingAll.filter(isRecordVisible);
-
-  // Etkinlik listesi
-  const list = document.querySelector(".event-list");
-  if (list) {
-    list.innerHTML = "";
-    if (!events.length) {
-      const li = document.createElement("li");
-      li.textContent = "Yaklaşan etkinlik bulunmuyor.";
-      list.appendChild(li);
-    } else {
-      events.forEach((ev) => {
-        const d = ev.startDate?.toDate
-          ? ev.startDate.toDate()
-          : new Date(ev.startDate);
-        const dateStr = d.toLocaleDateString("tr-TR", {
-          day: "2-digit",
-          month: "short",
-        });
-
-        const timeStr = ev.startTime ? `, ${ev.startTime}` : ""; // varsa saat ekle
-        const li = document.createElement("li");
-        li.innerHTML = `
-          <span class="event-date">${dateStr}${timeStr}</span>
-          <div class="event-info">
-            <strong>${ev.title}</strong>
-            <span>${ev.locationName || ""}</span>
-          </div>
-        `;
-
-        // Liste satırına tıklayınca modal aç
-        li.addEventListener("click", () => openEventModal(ev));
-
-        list.appendChild(li);
-      });
-    }
-  }
-
-  // Yakındaki etkinlikler
-  const nearbyBox = document.getElementById("nearby-events-list");
-  if (!nearbyBox) return;
-
-  if (!events.length) {
-    nearbyBox.textContent = "Yaklaşan ve yakın etkinlik bulunmuyor.";
-    return;
-  }
-
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      (pos) => showNearby(events, pos.coords.latitude, pos.coords.longitude),
-      () => (nearbyBox.innerText = "Konum alınamadı.")
-    );
-  } else {
-    nearbyBox.innerText = "Tarayıcınız konum desteği sağlamıyor.";
-  }
-}
-
-function showNearby(events, lat, lng) {
-  const nearDiv = document.getElementById("nearby-events-list");
-  if (!nearDiv) return;
-
-  const nearby = events
-    .filter((ev) => typeof ev.lat === "number" && typeof ev.lng === "number")
-    .map((ev) => ({
-      ...ev,
-      distance: haversine(lat, lng, ev.lat, ev.lng),
-    }))
-    .filter((ev) => ev.distance <= 200)
-    .sort((a, b) => a.distance - b.distance);
-
-  if (!nearby.length) {
-    nearDiv.textContent = "Yakın etkinlik bulunamadı.";
-    return;
-  }
-
-  nearDiv.innerHTML = nearby
-    .map(
-      (ev) =>
-        `<button type="button" class="nearby-event-btn">
-          <strong>${ev.title}</strong> (${ev.distance.toFixed(1)} km) – ${
-          ev.locationName
-        }
-        </button>`
-    )
-    .join("");
-
-  // Yakın etkinlik butonlarına modal bağla
-  const buttons = nearDiv.querySelectorAll(".nearby-event-btn");
-  buttons.forEach((btn, i) => {
-    const ev = nearby[i];
-    btn.addEventListener("click", () => openEventModal(ev));
-  });
-}
-
-function haversine(lat1, lon1, lat2, lon2) {
-  const R = 6371;
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) ** 2;
-  return R * 2 * Math.asin(Math.sqrt(a));
 }
 
 /* ---------- Başlat ---------- */
 
 (async function init() {
   try {
-    // Ortak modal davranışları
-    setupEventModal();
-
+    setupEventModal(); // Ortak modal davranışları (etkinlikler vs. için)
     await loadNews();
-    await loadEvents();
   } catch (err) {
-    console.error("Ana sayfa yükleme hatası:", err);
+    console.error("Ana sayfa yüklenirken hata:", err);
   }
 })();
