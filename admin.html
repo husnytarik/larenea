@@ -5,17 +5,13 @@
     <title>Larenea | Admin</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="assets/css/main.css" />
-
-    <!-- Leaflet CSS (admin haritası için) -->
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-      crossorigin=""
     />
   </head>
+
   <body class="admin-body">
-    <!-- GİRİŞ EKRANI -->
     <div class="admin-wrapper" id="login-view">
       <div class="admin-card">
         <div class="admin-logo">
@@ -24,216 +20,103 @@
         </div>
 
         <form id="login-form" class="admin-form">
-          <label class="form-label">
-            E-posta
-            <input type="email" id="login-email" class="form-input" required />
-          </label>
-
-          <label class="form-label">
-            Şifre
-            <input
+          <label class="form-label"
+            >E-posta<input
+              type="email"
+              id="login-email"
+              class="form-input"
+              required
+          /></label>
+          <label class="form-label"
+            >Şifre<input
               type="password"
               id="login-password"
               class="form-input"
               required
-            />
-          </label>
-
+          /></label>
           <button type="submit" class="btn-primary">Giriş Yap</button>
-
-          <div
-            id="login-error"
-            style="color: #ffb3b3; font-size: 12px; min-height: 16px"
-          ></div>
+          <div id="login-error"></div>
         </form>
-
-        <div class="admin-help">
-          Bu sayfa sadece yetkili kullanıcılar içindir. Firebase Authentication
-          panelinden tanımladığın e-posta ve şifre ile giriş yapabilirsin.
-        </div>
       </div>
     </div>
 
-    <!-- ADMIN PANELİ -->
-    <div id="admin-view" style="display: none; min-height: 100vh">
+    <div id="admin-view" style="display: none">
       <header class="admin-header">
-        <div class="admin-header-left">
-          <div class="logo-main">Larenea Admin</div>
-        </div>
+        <div class="logo-main">Larenea Admin</div>
         <nav class="admin-nav">
-          <span id="admin-user-email" style="opacity: 0.8"></span>
+          <span id="admin-user-email"></span>
           <a href="#" id="logout-link">Çıkış</a>
         </nav>
       </header>
 
       <main class="admin-main">
-        <!-- Yeni Haber Ekle -->
         <section class="admin-section">
           <h2>Yeni Haber Ekle</h2>
           <form id="new-news-form" class="admin-form admin-form-grid">
-            <label class="form-label">
-              Başlık
-              <input type="text" id="news-title" class="form-input" required />
-            </label>
-
-            <label class="form-label">
-              Kategori
-              <input
+            <label class="form-label"
+              >Başlık<input
                 type="text"
-                id="news-category"
+                id="news-title"
                 class="form-input"
-                placeholder="Örn: Kazı Günlüğü, Araştırma..."
-              />
-            </label>
-
-            <label class="form-label">
-              Öne Çıkan mı?
-              <select id="news-featured" class="form-input">
+                required
+            /></label>
+            <label class="form-label"
+              >Kategori<input type="text" id="news-category" class="form-input"
+            /></label>
+            <label class="form-label"
+              >Öne Çıkan mı?<select id="news-featured" class="form-input">
                 <option value="false">Hayır</option>
                 <option value="true">Evet</option>
-              </select>
-            </label>
-
-            <label class="form-label">
-              Yayın Durumu
-              <select id="news-visible" class="form-input">
+              </select></label
+            >
+            <label class="form-label"
+              >Yayın Durumu<select id="news-visible" class="form-input">
                 <option value="true" selected>Yayında</option>
                 <option value="false">Gizli</option>
-              </select>
-            </label>
-
-            <label class="form-label form-label-full">
-              Kısa Özet
-              <textarea
+              </select></label
+            >
+            <label class="form-label form-label-full"
+              >Kısa Özet<textarea
                 id="news-summary"
                 class="form-input"
                 rows="2"
-                placeholder="Ana sayfadaki kısa açıklama..."
               ></textarea>
             </label>
-
-            <label class="form-label form-label-full">
-              İçerik
-              <textarea
+            <label class="form-label form-label-full"
+              >İçerik<textarea
                 id="news-content"
                 class="form-input"
                 rows="6"
-                placeholder="Haber metni..."
               ></textarea>
             </label>
-
-            <label class="form-label form-label-full">
-              Kaynak
-              <div
-                style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:4px;"
-              >
-                <input
-                  type="url"
-                  id="news-source-url"
-                  class="form-input"
-                  placeholder="Kaynak bağlantısı (https://…)"
-                  style="flex:2 1 180px;"
-                />
-                <input
-                  type="text"
-                  id="news-source-label"
-                  class="form-input"
-                  placeholder="Kaynak adı / açıklaması (örn: Antiquity Journal, 2025)"
-                  style="flex:3 1 180px;"
-                />
-              </div>
-            </label>
-
-
-            <label class="form-label form-label-full">
-              <div
-                style="
-                  display: flex;
-                  justify-content: space-between;
-                  align-items: center;
-                  gap: 8px;
-                "
-              >
-                <span>Görseller</span>
-                <button
-                  type="button"
-                  id="news-add-image-row"
-                  class="btn-secondary"
-                  style="font-size: 11px; padding: 3px 8px"
-                >
-                  + Görsel ekle
-                </button>
-              </div>
-
-              <div id="news-images-rows"></div>
-              <div style="font-size: 11px; opacity: 0.75; margin-top: 4px">
-                Her satır için hem görsel linkini hem de fotoğrafçı / lisans
-                bilgisini yazabilirsin.
-              </div>
-            </label>
-
-            <label class="form-label">
-            
-
-            <div
-              class="form-label form-label-full"
-              style="display: flex; gap: 8px; align-items: center"
-            >
-              <button type="submit" class="btn-primary">Haberi Kaydet</button>
-              <span
-                id="news-save-status"
-                style="font-size: 12px; margin-left: 8px; opacity: 0.8"
-              ></span>
+            <label class="form-label form-label-full"
+              >Kaynak<input
+                type="url"
+                id="news-source-url"
+                class="form-input" /><input
+                type="text"
+                id="news-source-label"
+                class="form-input"
+            /></label>
+            <label class="form-label form-label-full"
+              >Görseller
+              <div id="news-images-rows"></div
+            ></label>
+            <div class="form-label form-label-full">
+              <button type="submit" class="btn-primary">Haberi Kaydet</button
+              ><span id="news-save-status"></span>
             </div>
           </form>
         </section>
 
-        <!-- Haber Listesi ve Detay/Edit -->
         <section class="admin-section">
           <h2>Haberler</h2>
-          <div
-            style="
-              display: grid;
-              grid-template-columns: minmax(0, 1.4fr) minmax(0, 2fr);
-              gap: 16px;
-              align-items: flex-start;
-            "
-          >
-            <!-- Sol: başlık listesi -->
-            <div>
-              <ul
-                id="news-list"
-                style="
-                  list-style: none;
-                  padding: 0;
-                  margin: 0;
-                  max-height: 420px;
-                  overflow: auto;
-                  font-size: 14px;
-                "
-              >
-                <li style="opacity: 0.7">Haberler yükleniyor...</li>
-              </ul>
-            </div>
-
-            <!-- Sağ: düzenleme formu -->
-            <div
-              id="news-detail"
-              style="
-                font-size: 14px;
-                border-left: 1px solid rgba(255, 255, 255, 0.08);
-                padding-left: 12px;
-                min-height: 80px;
-              "
-            >
-              <p style="opacity: 0.7">
-                Bir habere tıkladığında detayları burada düzenleyebileceksin.
-              </p>
-            </div>
+          <div class="admin-grid">
+            <ul id="news-list"></ul>
+            <div id="news-detail"></div>
           </div>
         </section>
 
-        <!-- Yeni Etkinlik Ekle -->
         <section class="admin-section">
           <h2>Yeni Etkinlik Ekle</h2>
           <form id="new-event-form" class="admin-form admin-form-grid">
@@ -243,70 +126,51 @@
             </label>
 
             <label class="form-label">
-              Başlangıç Tarih/Saat
-              <input
-                type="datetime-local"
-                id="event-date"
-                class="form-input"
-                required
-              />
+              Başlangıç Tarihi
+              <input type="date" id="event-date" class="form-input" required />
             </label>
 
             <label class="form-label">
-              Bitiş Tarih/Saat (opsiyonel)
-              <input
-                type="datetime-local"
-                id="event-end-date"
-                class="form-input"
-              />
+              Bitiş Tarihi (opsiyonel)
+              <input type="date" id="event-end-date" class="form-input" />
             </label>
 
             <label class="form-label">
-              Saat (Başlangıç)
-              <input
-                type="time"
-                id="event-start-time"
-                name="startTime"
-                class="form-input"
-              />
+              Başlangıç Saati
+              <input type="time" id="event-start-time" class="form-input" />
             </label>
 
             <label class="form-label">
-              Saat (Bitiş)
-              <input
-                type="time"
-                id="event-end-time"
-                name="endTime"
-                class="form-input"
-              />
+              Bitiş Saati (opsiyonel)
+              <input type="time" id="event-end-time" class="form-input" />
             </label>
 
             <label class="form-label">
-              Etkinlik Sahibi (opsiyonel)
+              Etkinlik Sahibi
               <input
                 type="text"
                 id="event-owner"
                 class="form-input"
-                placeholder="Örn: Akdeniz Üniversitesi"
-              />
-            </label>
-
-            <label class="form-label">
-              Konum (Şehir / Mekan)
-              <input
-                type="text"
-                id="event-location"
-                class="form-input"
-                placeholder="Örn: Antalya, Kaleiçi"
+                placeholder="Kuruluş / kişi adı"
               />
             </label>
 
             <label class="form-label">
               Ücret
               <select id="event-price-type" class="form-input">
-                <option value="free">Ücretsiz</option>
+                <option value="free" selected>Ücretsiz</option>
                 <option value="paid">Ücretli</option>
               </select>
+            </label>
+
+            <label class="form-label">
+              Konum
+              <input
+                type="text"
+                id="event-location"
+                class="form-input"
+                placeholder="Şehir / mekan"
+              />
             </label>
 
             <label class="form-label form-label-full">
@@ -315,12 +179,25 @@
                 id="event-address"
                 class="form-input"
                 rows="2"
-                placeholder="Haritada gözüksün diye tam adres (sokak, numara, ilçe, il)..."
               ></textarea>
             </label>
 
+            <div class="form-label form-label-full">
+              <div id="event-map"></div>
+            </div>
+
+            <label class="form-label">
+              Enlem (lat)
+              <input type="text" id="event-lat" class="form-input" />
+            </label>
+
+            <label class="form-label">
+              Boylam (lng)
+              <input type="text" id="event-lng" class="form-input" />
+            </label>
+
             <label class="form-label form-label-full">
-              Etkinlik Linki (opsiyonel)
+              Etkinlik Linki
               <input
                 type="url"
                 id="event-link-url"
@@ -329,36 +206,13 @@
               />
             </label>
 
-            <!-- HARİTA: buraya tıklayıp marker ile konum seçiyorsun -->
-            <div class="form-label form-label-full">
-              <div class="admin-map-label">
-                Harita Üzerinde Konum Seç
-                <span class="admin-meta"
-                  >(Haritaya tıkladığında enlem/boylam otomatik dolacak)</span
-                >
-              </div>
-              <div id="event-map"></div>
-            </div>
-
-            <!-- MANUEL LAT/LNG (harita bunları dolduruyor ama istersen elle de değiştirebilirsin) -->
-            <label class="form-label">
-              Enlem (lat)
-              <input
-                type="text"
-                id="event-lat"
+            <label class="form-label form-label-full">
+              Açıklama
+              <textarea
+                id="event-description"
                 class="form-input"
-                placeholder="Örn: 36.86123"
-              />
-            </label>
-
-            <label class="form-label">
-              Boylam (lng)
-              <input
-                type="text"
-                id="event-lng"
-                class="form-input"
-                placeholder="Örn: 30.63987"
-              />
+                rows="3"
+              ></textarea>
             </label>
 
             <label class="form-label form-label-full">
@@ -366,91 +220,31 @@
               <textarea
                 id="event-images-urls"
                 class="form-input"
-                rows="2"
-                placeholder="Her satıra bir görsel URL'si yazabilirsin..."
-              ></textarea>
-            </label>
-
-            <label class="form-label form-label-full">
-              Açıklama
-              <textarea
-                id="event-description"
-                class="form-input"
                 rows="3"
-                placeholder="Etkinliğin kısa açıklaması..."
+                placeholder="Her satıra bir görsel URL'si yaz"
               ></textarea>
             </label>
 
-            <div
-              class="form-label form-label-full"
-              style="display: flex; gap: 8px; align-items: center"
-            >
+            <div class="form-label form-label-full">
               <button type="submit" class="btn-primary">
                 Etkinliği Kaydet
               </button>
-              <span
-                id="event-save-status"
-                style="font-size: 12px; opacity: 0.8"
-              ></span>
+              <span id="event-save-status"></span>
             </div>
           </form>
         </section>
 
-        <!-- Etkinlik Listesi ve Detay/Edit -->
         <section class="admin-section">
           <h2>Etkinlikler</h2>
-          <div
-            style="
-              display: grid;
-              grid-template-columns: minmax(0, 1.4fr) minmax(0, 2fr);
-              gap: 16px;
-              align-items: flex-start;
-            "
-          >
-            <!-- Sol: etkinlik listesi -->
-            <div>
-              <ul
-                id="events-list"
-                style="
-                  list-style: none;
-                  padding: 0;
-                  margin: 0;
-                  max-height: 420px;
-                  overflow: auto;
-                  font-size: 14px;
-                "
-              >
-                <li style="opacity: 0.7">Etkinlikler yükleniyor...</li>
-              </ul>
-            </div>
-
-            <!-- Sağ: etkinlik düzenleme alanı -->
-            <div
-              id="event-detail"
-              style="
-                font-size: 14px;
-                border-left: 1px solid rgba(255, 255, 255, 0.08);
-                padding-left: 12px;
-                min-height: 80px;
-              "
-            >
-              <p style="opacity: 0.7">
-                Bir etkinliğe tıkladığında detayları burada düzenleyebileceksin.
-              </p>
-            </div>
+          <div class="admin-grid">
+            <ul id="events-list"></ul>
+            <div id="event-detail"></div>
           </div>
         </section>
       </main>
     </div>
 
-    <!-- Leaflet JS (global L) -->
-    <script
-      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-      crossorigin=""
-    ></script>
-
-    <!-- Admin JS -->
-    <script type="module" src="assets/js/admin.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script type="module" src="assets/js/admin/admin.js "></script>
   </body>
 </html>

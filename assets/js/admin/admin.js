@@ -1,15 +1,12 @@
 // assets/js/admin.js
 
 // Firebase SDK modülleri
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import {
-  getAuth,
   onAuthStateChanged,
   signInWithEmailAndPassword,
   signOut,
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 import {
-  getFirestore,
   collection,
   addDoc,
   query,
@@ -21,18 +18,7 @@ import {
   updateDoc,
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-// --- Firebase config (senin projen) ---
-const firebaseConfig = {
-  apiKey: "AIzaSyAPSZrqXCIJsTUd4JS6mSPJ9_1ijZ33VIs",
-  authDomain: "lareneamedia.firebaseapp.com",
-  projectId: "lareneamedia",
-  messagingSenderId: "131757263715",
-  appId: "1:131757263715:web:dbb86a73bc9da1a4b4e156",
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+import { auth, db } from "../firebase.js";
 
 // --- DOM referansları ---
 const loginView = document.getElementById("login-view");

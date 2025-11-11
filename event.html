@@ -1,11 +1,85 @@
-<!-- event.html -->
-<link
-  rel="stylesheet"
-  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Larenea | Etkinlik Haritası</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="assets/css/main.css" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+  </head>
 
-<div id="event-detail"></div>
-<div id="map" style="width: 100%; height: 300px; margin-top: 16px"></div>
+  <body>
+    <header class="site-header">
+      <div class="top-bar">
+        <div class="logo">
+          <div class="logo-main">Larenea</div>
+          <div class="logo-sub">Etkinlik Haritası</div>
+        </div>
+        <nav class="main-nav">
+          <!-- linkler yeni dosya adlarına göre -->
+          <a href="home.html">Ana Sayfa</a>
+          <a href="event.html" class="active">Etkinlikler</a>
+        </nav>
+      </div>
+    </header>
 
-<script type="module" src="assets/js/event-detail.js"></script>
+    <main class="site-main map-page">
+      <section class="map-card card">
+        <div class="map-card-header">
+          <h1>Yakındaki Etkinlikler</h1>
+          <p>
+            Haritadaki işaretçilere tıklayarak etkinliklerin detaylarını
+            görebilirsin.
+          </p>
+        </div>
+
+        <div id="events-map"></div>
+        <div id="map-attribution">
+          © Esri, USGS, NOAA | © OpenStreetMap contributors © CARTO
+        </div>
+        <div class="map-legend">
+          <span class="dot"></span>
+          <span>Etkinlik konumları</span>
+        </div>
+        <div id="map-events-list" class="map-events-list"></div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-bottom">
+        © <span id="footer-year"></span> Larenea. Tüm hakları saklıdır.
+      </div>
+    </footer>
+
+    <!-- Etkinlik modalı (istersen burada da kullanmaya devam edebilirsin) -->
+    <div id="event-modal" class="event-modal">
+      <div class="event-modal-backdrop"></div>
+      <div class="event-modal-dialog">
+        <button type="button" class="event-modal-close" aria-label="Kapat">
+          ×
+        </button>
+        <div class="event-modal-media">
+          <img id="event-modal-image" src="" alt="" />
+        </div>
+        <div class="event-modal-content">
+          <h2 id="event-modal-title" class="event-modal-title"></h2>
+          <p id="event-modal-date" class="event-modal-meta"></p>
+          <p id="event-modal-location" class="event-modal-location"></p>
+          <p id="event-modal-address" class="event-modal-address"></p>
+          <div class="event-modal-actions">
+            <button type="button" id="event-modal-map-btn" class="btn-primary">
+              Haritalarda aç
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Yeni map giriş dosyası -->
+    <script type="module" src="assets/js/events/mapPublic.js"></script>
+  </body>
+</html>

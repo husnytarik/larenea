@@ -1,47 +1,11 @@
-// assets/js/home.js
-//
-// Ana sayfa: haberler + slider mantığı
-// - Firestore'dan "news" koleksiyonunu çeker
-// - Öne çıkan (featured) haberi büyük kartta gösterir
-// - Diğer birkaç haberi küçük kartlarda listeler
-// - Çok görselli haberlerde slider + her görsel için caption/link gösterir
-
-import { db } from "./firebase.js";
-import {
-  collection,
-  query,
-  orderBy,
-  getDocs,
-} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-
-import { setupEventModal } from "./eventModal.js";
-
-/* ---------- Yardımcılar ---------- */
-
-function formatDate(ts) {
-  if (!ts) return "";
-  const d = ts.toDate ? ts.toDate() : new Date(ts);
-  return d.toLocaleDateString("tr-TR", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
-
-function escapeHtml(str) {
-  if (!str) return "";
-  return String(str)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
+// assets/js/news/newsCards.js
+import { formatDate, escapeHtml } from "../helpers.js";
 
 /**
  * Firestore'dan gelen görsel stringini çözer.
- * Desteklenen formatlar:
- *   - "https://...jpg"
- *   - "https://...jpg||John Doe / Unsplash (Lisans bilgisi)"
+ * Format:
+ *   "url"
+ *   "url||caption"
  */
 function decodeImageEntry(entry) {
   if (!entry) return null;
@@ -54,9 +18,7 @@ function decodeImageEntry(entry) {
 }
 
 /**
- * Tek bir haber için "Kaynak" HTML'i üretir.
- * - Hem URL hem label varsa → label metni tıklanabilir link olur.
- * - Sadece URL varsa → URL metin olarak gösterilir.
+ * Haber için kaynak linki HTML'i
  */
 function buildSourceHtml(news) {
   const url = (news.sourceUrl || "").trim();
@@ -80,12 +42,10 @@ function buildSourceHtml(news) {
   `;
 }
 
-/* ---------- Slider ---------- */
-
 /**
- * Her slider için ortak davranış.
- * - container: .slider div'i (içinde .slides img, .slider-dots, butonlar var)
- * - captionBox: Görsel açıklamasının yazılacağı element (slider'ın DIŞINDA)
+ * Ortak slider davranışı
+ * container: .slider
+ * captionBox: slider dışındaki açıklama kutusu
  */
 function setupSlider(container, captionBox) {
   if (!container) return;
@@ -132,20 +92,20 @@ function setupSlider(container, captionBox) {
     updateCaption();
   }
 
-  // Butonlar
-  if (prev)
+  if (prev) {
     prev.addEventListener("click", (e) => {
       e.stopPropagation();
       showSlide(index - 1);
     });
+  }
 
-  if (next)
+  if (next) {
     next.addEventListener("click", (e) => {
       e.stopPropagation();
       showSlide(index + 1);
     });
+  }
 
-  // Dots
   dots.forEach((dot, iDot) => {
     dot.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -153,7 +113,6 @@ function setupSlider(container, captionBox) {
     });
   });
 
-  // Slide alanına tıklanarak sağ/sol gezinme
   container.addEventListener("click", (e) => {
     if (e.target.closest(".slider-btn") || e.target.closest(".dot")) return;
     const rect = container.getBoundingClientRect();
@@ -161,41 +120,16 @@ function setupSlider(container, captionBox) {
     showSlide(x < rect.width / 2 ? index - 1 : index + 1);
   });
 
-  // Başlangıç
   showSlide(0);
 }
 
-/* ---------- Haberler ---------- */
-
-async function loadNews() {
-  const newsRef = collection(db, "news");
-  const q = query(newsRef, orderBy("createdAt", "desc"));
-  const snap = await getDocs(q);
-
-  const allNews = [];
-  snap.forEach((docSnap) => {
-    allNews.push({ id: docSnap.id, ...docSnap.data() });
-  });
-
-  // isVisible === false ise gösterme
-  const visibleNews = allNews.filter((n) => n.isVisible !== false);
-  if (!visibleNews.length) return;
-
-  const featured = visibleNews.find((n) => n.isFeatured) || visibleNews[0];
-  const others = visibleNews.filter((n) => n.id !== featured.id).slice(0, 6);
-
-  renderFeaturedCard(featured);
-  renderSmallNews(others);
-}
-
 /**
- * Manşet haberi kartını doldurur.
+ * Manşet haberi karta basar.
  */
-function renderFeaturedCard(news) {
+export function renderFeaturedCard(news) {
   const card = document.querySelector(".card-featured");
   if (!card || !news) return;
 
-  // Görseller
   const images = (Array.isArray(news.images) ? news.images : [])
     .map(decodeImageEntry)
     .filter(Boolean);
@@ -235,67 +169,51 @@ function renderFeaturedCard(news) {
       </div>
     `;
 
-    // Manşet kartın en başına görsel slider'ı ekle
     card.prepend(media);
 
-    // Caption için slider'ın DIŞINA kutu koy (dots ile çakışmasın)
     const captionBox = document.createElement("div");
     captionBox.className = "slider-caption";
-    // card-media'dan hemen sonra yerleştir
-    card.insertBefore(captionBox, media.nextSibling);
+
+    media.appendChild(captionBox);
 
     setupSlider(media, captionBox);
     card.classList.add("has-media");
   }
 
-  // Metinler
   const tagEl = card.querySelector(".card-tag");
   const titleEl = card.querySelector(".card-title");
   const metaEl = card.querySelector(".card-meta");
   const textEl = card.querySelector(".card-text");
   const linkEl = card.querySelector(".card-link");
-  const sourceEl = card.querySelector(".card-meta-source");
+  const sourceMetaEl = card.querySelector(".card-meta-source");
 
   if (tagEl) tagEl.textContent = news.category || "Haber";
   if (titleEl) titleEl.textContent = news.title || "";
   if (metaEl) metaEl.textContent = formatDate(news.createdAt);
   if (textEl) textEl.textContent = news.summary || "";
-  if (linkEl) {
-    linkEl.href = "haber.html?id=" + news.id;
-    linkEl.textContent = "Haberi Oku";
-  }
-
-  if (sourceEl) {
-    const html = buildSourceHtml(news);
-    if (html) {
-      sourceEl.style.display = "";
-      sourceEl.innerHTML = html;
-    } else {
-      sourceEl.style.display = "none";
-      sourceEl.textContent = "";
-    }
-  }
+  if (linkEl) linkEl.href = `haber.html?id=${news.id}`;
+  if (sourceMetaEl) sourceMetaEl.innerHTML = buildSourceHtml(news);
 }
 
 /**
  * Küçük haber kartlarını grid içerisine basar.
  */
-function renderSmallNews(newsList) {
+export function renderSmallNews(items) {
+  // ÖNEMLİ: HTML'deki container .news-grid-small
   const grid = document.querySelector(".news-grid-small");
   if (!grid) return;
 
   grid.innerHTML = "";
 
-  newsList.forEach((news, index) => {
+  items.forEach((news, index) => {
     const card = document.createElement("article");
     card.className = "card card-small";
 
-    // Basit layout çeşitliliği için sınıf ekleyebilirsin (opsiyonel)
+    // İstersen ufak layout çeşitliliği:
     const mod = index % 3;
     if (mod === 1) card.classList.add("card-small--wide");
     if (mod === 2) card.classList.add("card-small--tall");
 
-    // Görseller
     const images = (Array.isArray(news.images) ? news.images : [])
       .map(decodeImageEntry)
       .filter(Boolean);
@@ -338,7 +256,7 @@ function renderSmallNews(newsList) {
         </div>
       `;
     } else if (images.length === 1) {
-      // Tek görsel → direkt img + caption link
+      // Tek görsel
       const img = images[0];
       mediaHtml = `
         <div class="card-media">
@@ -349,7 +267,6 @@ function renderSmallNews(newsList) {
         </div>
       `;
 
-      // Slider yokken de altta küçük caption linki göster
       captionAfterSlider = `
         <div class="slider-caption">
           <div class="footer-bottom">
@@ -377,26 +294,13 @@ function renderSmallNews(newsList) {
 
     grid.appendChild(card);
 
-    // Eğer slider varsa, ilgili captionBox'ı slider'ın DIŞINA bulup bağla
     if (images.length > 1) {
       const sliderEl = card.querySelector(".card-media.slider");
       const captionBox = document.createElement("div");
       captionBox.className = "slider-caption";
+      sliderEl.appendChild(captionBox);
 
-      // slider'dan hemen sonra yerleştir
-      card.insertBefore(captionBox, sliderEl.nextSibling);
       setupSlider(sliderEl, captionBox);
     }
   });
 }
-
-/* ---------- Başlat ---------- */
-
-(async function init() {
-  try {
-    setupEventModal(); // Ortak modal davranışları (etkinlikler vs. için)
-    await loadNews();
-  } catch (err) {
-    console.error("Ana sayfa yüklenirken hata:", err);
-  }
-})();
