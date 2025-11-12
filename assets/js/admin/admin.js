@@ -354,7 +354,7 @@ function formatTimeInputValue(value) {
 function parseImageUrls(text) {
   if (!text) return [];
   return text
-    .split(/[\n,]+/)
+    .split(/\r?\n/)
     .map((s) => s.trim())
     .filter((s) => !!s);
 }
