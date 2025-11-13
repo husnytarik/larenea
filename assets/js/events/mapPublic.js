@@ -55,13 +55,24 @@ async function loadEventsOnMap() {
   const itemsHtml = [];
   const markersById = new Map();
 
+  // Liste altındaki açık detay panelini takip ederiz
+  let openDetailsEl = null;
+
   events.forEach((ev) => {
     const lat = ev.lat;
     const lng = ev.lng;
     const title = ev.title || "Etkinlik";
     const locationName = ev.locationName || "";
     const dateStr = ev.startDate ? formatDate(ev.startDate) : "";
+    const eventUrl = (ev.eventUrl || "").trim();
 
+    // açıklama metni: summary > description > ""
+    const desc =
+      (ev.summary && String(ev.summary)) ||
+      (ev.description && String(ev.description)) ||
+      "";
+
+    // --- Marker ve popup ---
     const marker = L.circleMarker([lat, lng], {
       radius: 7,
       color: "#c79a54",
@@ -83,27 +94,37 @@ async function loadEventsOnMap() {
 
     marker.on("click", () => {
       const latLng = [lat, lng];
-      map.setView(latLng, 13, { animate: true });
+      map.setView(latLng, 10, { animate: true });
       marker.openPopup();
     });
 
     boundsLatLngs.push([lat, lng]);
 
+    // --- Harita altı liste öğesi (başlık + gizli detay) ---
+    const safeTitle = escapeHtml(title);
+    const safeLoc = locationName ? escapeHtml(locationName) : "";
+    const safeDesc = desc ? escapeHtml(desc) : "";
+    const linkHtml = eventUrl
+      ? `<a href="${escapeHtml(
+          eventUrl
+        )}" target="_blank" rel="noopener noreferrer" class="map-event-link">Etkinlik linki ↗</a>`
+      : "";
+
     itemsHtml.push(`
-      <article class="map-event-item">
-        <button type="button" data-id="${ev.id}" class="map-event-btn">
-          <div class="map-event-title">${escapeHtml(title)}</div>
+      <article class="map-event-item" data-id="${ev.id}">
+        <button type="button" class="map-event-btn">
+          <div class="map-event-title">${safeTitle}</div>
           <div class="map-event-meta">
-            <span>${dateStr}</span>
+            <span>${dateStr || ""}</span>
             ${
-              locationName
-                ? `<span class="sep">•</span><span>${escapeHtml(
-                    locationName
-                  )}</span>`
-                : ""
+              safeLoc ? `<span class="sep">•</span><span>${safeLoc}</span>` : ""
             }
           </div>
         </button>
+        <div class="map-event-details" hidden>
+          ${safeDesc ? `<p class="map-event-desc">${safeDesc}</p>` : ""}
+          ${linkHtml}
+        </div>
       </article>
     `);
   });
@@ -115,23 +136,64 @@ async function loadEventsOnMap() {
   if (listContainer) {
     listContainer.innerHTML = itemsHtml.join("");
 
-    const buttons = Array.from(
-      listContainer.querySelectorAll(".map-event-btn")
-    );
-    buttons.forEach((btn) => {
+    const items = Array.from(listContainer.querySelectorAll(".map-event-item"));
+
+    items.forEach((itemEl) => {
+      const btn = itemEl.querySelector(".map-event-btn");
+      const details = itemEl.querySelector(".map-event-details");
+      const id = itemEl.getAttribute("data-id");
+      const ev = events.find((e) => e.id === id);
+
       btn.addEventListener("click", () => {
-        const id = btn.getAttribute("data-id");
-        const ev = events.find((e) => e.id === id);
-        if (!ev) return;
-
-        const latLng = [ev.lat, ev.lng];
-        map.setView(latLng, 13, { animate: true });
-
-        const marker = markersById.get(id);
-        if (marker) {
-          marker.openPopup();
+        // İlgili marker/popup'ı göster
+        if (ev) {
+          const latLng = [ev.lat, ev.lng];
+          map.setView(latLng, 13, { animate: true });
+          const marker = markersById.get(id);
+          if (marker) marker.openPopup();
         }
+
+        // Başka açık detay varsa kapat
+        if (openDetailsEl && openDetailsEl !== details) {
+          openDetailsEl.hidden = true;
+          openDetailsEl.parentElement.classList.remove("open");
+        }
+
+        // Bu öğeyi toggle et
+        const willOpen = details.hidden;
+        details.hidden = !willOpen;
+        itemEl.classList.toggle("open", willOpen);
+        openDetailsEl = willOpen ? details : null;
       });
+    });
+
+    // Liste dışına tıklayınca açık detay kapanır
+    document.addEventListener("click", (e) => {
+      if (!openDetailsEl) return;
+      const clickedInsideList = listContainer.contains(e.target);
+      if (!clickedInsideList) {
+        openDetailsEl.hidden = true;
+        openDetailsEl.parentElement.classList.remove("open");
+        openDetailsEl = null;
+      }
+    });
+
+    // Haritaya (boş bir yere) tıklayınca da kapat
+    map.on("click", () => {
+      if (openDetailsEl) {
+        openDetailsEl.hidden = true;
+        openDetailsEl.parentElement.classList.remove("open");
+        openDetailsEl = null;
+      }
+    });
+
+    // Herhangi bir popup açıldığında istersen liste detayını da kapat
+    map.on("popupopen", () => {
+      if (openDetailsEl) {
+        openDetailsEl.hidden = true;
+        openDetailsEl.parentElement.classList.remove("open");
+        openDetailsEl = null;
+      }
     });
   }
 }
