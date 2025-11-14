@@ -1189,9 +1189,11 @@ body {
   position: fixed;
   inset: 0;
   display: none;
-  align-items: center;
+  /* align-items: center;  eskisi */
+  align-items: center; /* üstten başlayarak hizala */
   justify-content: center;
   z-index: 120;
+  padding-top: 64px; /* header ile modal arasında boşluk */
 }
 .event-modal--visible {
   display: flex;
@@ -1210,7 +1212,7 @@ body {
   border: 1px solid var(--color-border-strong);
   max-width: 520px;
   width: 90%;
-  max-height: 90vh;
+  max-height: 80%;
   box-shadow: var(--shadow-strong);
   overflow: hidden;
   display: flex;
@@ -1218,14 +1220,14 @@ body {
 }
 .event-modal-media {
   width: 100%;
-  max-height: 70vh;
+  max-height: 40vh;
   overflow: hidden;
   background: var(--color-bg-muted);
 }
 .event-modal-media img {
   width: 100%;
   height: auto;
-  max-height: 70vh;
+  max-height: 50%;
   object-fit: contain;
   display: block;
 }
@@ -1233,8 +1235,10 @@ body {
   padding: 14px 18px 16px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 1px;
   overflow-y: auto;
+  max-height: calc(100vh - 120px);
+  animation: modalIn 0.25s ease-out;
 }
 .event-modal-title {
   margin: 0;
