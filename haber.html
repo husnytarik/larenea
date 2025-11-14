@@ -1,0 +1,47 @@
+<!-- haber.html -->
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Larenea | Haber</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Ortak stil -->
+    <link rel="stylesheet" href="assets/css/main.css" />
+  </head>
+  <body>
+    <!-- Buraya mevcut .site-header ve ticker yapını koyabilirsin -->
+
+    <main class="site-main">
+      <article class="card article-card" id="article-card">
+        <!-- Medya (slider / görsel) buraya JS ile gelecek -->
+        <div class="card-media" id="article-media"></div>
+
+        <!-- Kategori -->
+        <span class="card-tag" id="article-tag"></span>
+
+        <!-- Başlık -->
+        <h1 class="card-title" id="article-title"></h1>
+
+        <!-- Meta (tarih, istersen kategori ek metin) -->
+        <p class="card-meta" id="article-meta"></p>
+
+        <!-- Asıl içerik -->
+        <div class="article-body" id="article-body"></div>
+
+        <!-- Kaynak bilgisi (link vs.) -->
+        <div class="card-meta-source" id="article-source"></div>
+
+        <!-- Geri dön linki -->
+        <a href="index.html" class="card-link article-back">
+          ← Tüm haberlere dön
+        </a>
+      </article>
+    </main>
+
+    <!-- Footer'ını da ekleyebilirsin -->
+
+    <!-- Firebase + JS -->
+    <script type="module" src="assets/js/news/newsDetail.js"></script>
+  </body>
+</html>
