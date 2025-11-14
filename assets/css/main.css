@@ -204,6 +204,11 @@ body {
 }
 
 /* cards */
+/* =========================
+   HABER KARTLARI
+   ========================= */
+
+/* Temel kart */
 .card {
   background: var(--color-bg-alt);
   border-radius: var(--radius-lg);
@@ -215,6 +220,8 @@ body {
   box-shadow: var(--shadow-soft);
   overflow: hidden;
 }
+
+/* Manşet kart (üstte sliderlı büyük kart) */
 .card-featured {
   grid-column: 1;
   grid-row: 1;
@@ -222,67 +229,88 @@ body {
   position: relative;
   gap: 0;
 }
+
+/* Ortak medya alanı */
 .card-media {
   margin: 0 0 12px;
   overflow: hidden;
 }
+
 .card-featured .card-media {
-  margin: -16px -18px 0;
+  margin: -16px -18px 12px;
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
+
+/* Ana görseller */
 .card-media img {
   width: 100%;
   height: 260px;
   object-fit: cover;
   display: block;
 }
+
+/* Manşet içeriğini yanlardan aynı paddingle hizala */
+/* Manşet içeriğini yanlardan aynı paddingle hizala */
 .card-featured > .card-tag,
 .card-featured > .card-title,
 .card-featured > .card-meta,
 .card-featured > .card-text,
-.card-featured > .card-link,
 .card-featured > .card-meta-source {
   padding: 0 18px;
 }
+
+/* Haberi Oku butonu tüm kartlarda aynı, sadece soldan hizalıyoruz */
+.card-featured > .card-link {
+  margin-left: 18px; /* isteğe göre 16–20px oynatabilirsin */
+}
+
 .card-featured > .card-tag {
   margin-top: 14px;
 }
 
+/* Küçük haber grid’i (sliderın altındaki kartlar) */
 .news-grid-small {
   grid-column: 1;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 12px;
-  grid-auto-flow: dense;
 }
+
+/* Küçük kartlar – hepsi aynı iskelet */
 .news-grid-small .card {
   position: relative;
-  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 16px 16px;
+  border-radius: var(--radius-lg);
+  height: 100%;
 }
+
+/* Küçük kartta görsel varsa üstte birleşsin */
 .news-grid-small .card.has-media {
   padding-top: 0;
 }
+
 .news-grid-small .card.has-media .card-media {
-  margin: -16px -18px 12px;
+  margin: -14px -16px 12px;
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
+
+/* Küçük kart görsel yüksekliği */
 .news-grid-small .card-media img {
   width: 100%;
   height: 200px;
   object-fit: cover;
   display: block;
 }
-.news-grid-small .card-small--wide {
-  grid-column: span 2;
-}
-.news-grid-small .card-small--tall {
+
+/* Uzun özetli kartlar için biraz daha yüksek */
+.news-grid-small .card.card-small--tall {
   min-height: 280px;
 }
-.news-grid-small .card-small--tall .card-media img,
-.news-grid-small .card-small--tall .card-media.slider .slides {
-  height: 240px;
-}
-.news-grid-small .card-small--highlight {
+
+/* Highlight (özel vurgulu) kartlar – sadece arka plan ve border farklı */
+.news-grid-small .card.card-small--highlight {
   background: radial-gradient(
     circle at top left,
     var(--color-bg-radial),
@@ -290,15 +318,23 @@ body {
   );
   border-color: rgba(199, 154, 84, 0.35);
 }
-.news-grid-small .card-small--compact .card-text {
+
+/* Daha kompakt mod istediğinde (özet yok) */
+.news-grid-small .card.card-small--compact .card-text {
   display: none;
 }
-.news-grid-small .card-small--compact .card-title {
+
+.news-grid-small .card.card-small--compact .card-title {
   font-size: 16px;
 }
 
+/* =========================
+   Kart iç tipografi
+   ========================= */
+
 .card-tag {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.16em;
@@ -307,87 +343,39 @@ body {
   background: var(--color-accent-soft);
   color: var(--color-accent-dark);
   font-weight: 700;
+  margin-bottom: 6px; /* altına nefes alan boşluk */
 }
+
 .card-title {
-  margin: 0;
+  margin: 4px 0 0;
   font-size: 18px;
   line-height: 1.3;
   font-family: var(--font-heading);
 }
+
 .card-meta {
   font-size: 12px;
   color: var(--color-text-soft);
 }
+
 .card-text {
   font-size: 14px;
   line-height: 1.6;
   color: var(--color-text-muted);
 }
 
-.card-small {
-  padding: 12px 14px;
-  border-radius: var(--radius-md);
-}
-.card-small--horizontal {
-  display: flex;
-  flex-direction: row;
-  gap: 12px;
-  align-items: stretch;
-}
-.card-small--horizontal .card-media {
-  flex: 0 0 45%;
-  border-radius: 6px;
-}
-.card-small--horizontal img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.card-small--horizontal .card-title {
-  font-size: 1rem;
+/* Kaynak satırı */
+.card-meta-source {
+  font-size: 11px;
+  color: var(--color-text-soft);
 }
 
-.card-small--overlay {
-  position: relative;
-  color: var(--color-text);
-  border: none;
-}
-.card-small--overlay img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  filter: brightness(0.7);
-  transition: filter 0.3s;
-}
-.card-small--overlay:hover img {
-  filter: brightness(0.9);
-}
-.card-small--overlay .card-tag,
-.card-small--overlay .card-title,
-.card-small--overlay .card-meta {
-  position: absolute;
-  left: 12px;
-}
-.card-small--overlay .card-tag {
-  top: 10px;
-  background: var(--color-bg-muted);
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 0.7rem;
-}
-.card-small--overlay .card-title {
-  bottom: 24px;
-  font-size: 1.1rem;
-  font-weight: 700;
-}
-.card-small--overlay .card-meta {
-  bottom: 8px;
-  font-size: 0.8rem;
-  opacity: 0.8;
-}
+/* =========================
+   Haberi Oku butonu
+   ========================= */
 
 .card-link {
-  margin-top: auto;
+  margin-top: auto; /* kartın dibine yapıştır */
   align-self: flex-start;
   font-size: 13px;
   text-decoration: none;
@@ -398,6 +386,7 @@ body {
   background: var(--color-bg-muted);
   transition: background 0.15s ease, transform 0.08s ease, box-shadow 0.15s ease;
 }
+
 .card-link:hover {
   background: var(--color-accent);
   color: var(--color-accent-contrast);
