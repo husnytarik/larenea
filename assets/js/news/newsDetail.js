@@ -136,6 +136,7 @@ async function loadNewsDetail() {
   const metaEl = document.getElementById("article-meta");
   const bodyEl = document.getElementById("article-body");
   const sourceEl = document.getElementById("article-source");
+  const tagsInlineEl = document.getElementById("article-tags-inline");
 
   if (!id) {
     if (titleEl) titleEl.textContent = "Haber bulunamadı";
@@ -161,6 +162,24 @@ async function loadNewsDetail() {
     // 1) Medya / slider
     const rawImages = Array.isArray(news.images) ? news.images : [];
     const images = rawImages.map(decodeImageEntry).filter(Boolean);
+
+    if (tagsInlineEl && Array.isArray(news.tags) && news.tags.length) {
+      const html = news.tags
+        .map((t, idx) => {
+          const safe = escapeHtml(t);
+
+          // 👇 Artık tag filtresi değil, arama parametresi:
+          const url = `home.html?q=${encodeURIComponent(String(t))}`;
+
+          // İlk etikette '|' yok, sonrakilerde var
+          return idx === 0
+            ? `<a href="${url}" class="tag-inline-link">${safe}</a>`
+            : ` | <a href="${url}" class="tag-inline-link">${safe}</a>`;
+        })
+        .join("");
+
+      tagsInlineEl.innerHTML = html;
+    }
 
     if (images.length > 0 && mediaEl) {
       mediaEl.classList.add("slider");
@@ -212,26 +231,14 @@ async function loadNewsDetail() {
     // 3) Gövde (içerik)
     if (bodyEl) {
       if (news.contentHtml) {
-        // Eğer özellikle HTML kaydediyorsan, direkt HTML basar
+        // Özellikle HTML kaydediyorsan, aynen bas
         bodyEl.innerHTML = news.contentHtml;
       } else if (news.content) {
-        // Düz metin + satır sonlarını paragrafa çevir
+        // Düz metni olduğu gibi göster (boşluklar + satır sonları korunacak)
         const text = String(news.content);
-
-        // İki satır boşluk (çift Enter) varsa onu paragraf ayırıcı kabul edelim
-        const paragraphs = text
-          .split(/\n{2,}/) // 2 veya daha fazla boş satır
-          .map((p) => p.trim())
-          .filter((p) => p.length > 0);
-
-        // Her paragrafı <p> içinde, HTML escape ederek bas
-        const html = paragraphs
-          .map((p) => `<p>${escapeHtml(p).replace(/\n/g, "<br>")}</p>`)
-          .join("");
-
-        bodyEl.innerHTML = html || "";
+        bodyEl.textContent = text;
       } else if (news.summary) {
-        bodyEl.textContent = news.summary;
+        bodyEl.textContent = String(news.summary);
       } else {
         bodyEl.textContent = "";
       }

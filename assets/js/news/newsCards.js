@@ -144,6 +144,28 @@ function getCardTypeClass(news, index) {
  * dolduruluyor.
  * NOT: Artık burada haber KAYNAĞI gösterilmiyor.
  */
+
+function buildTagUrl(tag) {
+  const value = encodeURIComponent(String(tag));
+  // 👇 Tag filtresi değil, arama
+  return `home.html?q=${value}`;
+}
+
+function buildInlineTagsHtml(tags) {
+  if (!Array.isArray(tags) || !tags.length) return "";
+
+  return tags
+    .map((t, idx) => {
+      const safe = escapeHtml(t);
+      const url = buildTagUrl(t);
+
+      return idx === 0
+        ? `<a href="${url}" class="tag-inline-link">${safe}</a>`
+        : ` | <a href="${url}" class="tag-inline-link">${safe}</a>`;
+    })
+    .join("");
+}
+
 export function renderFeaturedCard(news) {
   const card = document.querySelector(".card-featured");
   if (!card || !news) return;
@@ -223,6 +245,18 @@ export function renderFeaturedCard(news) {
   if (linkEl) {
     linkEl.href = `haber.html?id=${news.id}`;
     linkEl.textContent = "Haberi Oku";
+
+    const inline = buildInlineTagsHtml(news.tags);
+    if (inline) {
+      // Önce eski inline tag bar varsa sil
+      let tagSpan = card.querySelector(".card-inline-tags");
+      if (!tagSpan) {
+        tagSpan = document.createElement("span");
+        tagSpan.className = "card-inline-tags";
+        linkEl.insertAdjacentElement("afterend", tagSpan);
+      }
+      tagSpan.innerHTML = inline;
+    }
   }
 }
 
@@ -318,7 +352,12 @@ export function renderSmallNews(items, options = {}) {
         <h4 class="card-title">${escapeHtml(news.title || "")}</h4>
         <p class="card-meta">${formatDate(news.createdAt)}</p>
         <p class="card-text">${escapeHtml(news.summary || "")}</p>
-        <a href="${detailUrl}" class="card-link">Haberi Oku</a>
+        <div class="card-footer-row">
+          <a href="${detailUrl}" class="card-link">Haberi Oku</a>
+          <span class="card-inline-tags">
+            ${buildInlineTagsHtml(news.tags)}
+          </span>
+        </div>
       `;
     }
 

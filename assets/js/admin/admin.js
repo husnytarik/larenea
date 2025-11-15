@@ -31,6 +31,7 @@ const logoutLink = document.getElementById("logout-link");
 const adminUserEmail = document.getElementById("admin-user-email");
 
 // Haber formu
+// Haber formu
 const newNewsForm = document.getElementById("new-news-form");
 const newsTitleInput = document.getElementById("news-title");
 const newsCategoryInput = document.getElementById("news-category");
@@ -39,6 +40,9 @@ const newsSummaryInput = document.getElementById("news-summary");
 const newsContentInput = document.getElementById("news-content");
 const newsSaveStatus = document.getElementById("news-save-status");
 const newsCardTypeSelect = document.getElementById("news-card-type");
+
+// 👉 ETİKET INPUT’U
+const newsTagsInput = document.getElementById("news-tags");
 
 // yeni: kaynak alanları
 const newsSourceUrlInput = document.getElementById("news-source-url");
@@ -435,9 +439,16 @@ if (newNewsForm) {
 
     const title = newsTitleInput.value.trim();
     const category = newsCategoryInput.value.trim();
-    const summary = newsSummaryInput.value.trim();
-    const content = newsContentInput.value.trim();
+    const summary = newsSummaryInput.value;
+    const content = newsContentInput.value;
     const isFeatured = newsFeaturedInput.value === "true";
+
+    // 👉 Etiketleri al
+    const rawTags = newsTagsInput?.value.trim() || "";
+    const tags = rawTags
+      .split(",")
+      .map((t) => t.trim())
+      .filter((t) => t.length > 0);
 
     const cardTypeRaw = newsCardTypeSelect?.value || "";
     const cardType = cardTypeRaw.trim() || null;
@@ -459,11 +470,12 @@ if (newNewsForm) {
         summary: summary || null,
         content: content || null,
         isFeatured,
-        cardType, // 👈 yeni alan
+        cardType,
         isVisible: true,
         images: images.length ? images : null,
         sourceUrl: sourceUrl || null,
         sourceLabel: sourceLabel || null,
+        tags: tags.length ? tags : null, // 👈 ETİKETLER BURADA
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
@@ -472,8 +484,8 @@ if (newNewsForm) {
       newNewsForm.reset();
       newsFeaturedInput.value = "false";
       if (newsCardTypeSelect) newsCardTypeSelect.value = "";
+      if (newsTagsInput) newsTagsInput.value = "";
 
-      // Kaynak alanlarını ve görsel satırlarını sıfırla
       if (newsSourceUrlInput) newsSourceUrlInput.value = "";
       if (newsSourceLabelInput) newsSourceLabelInput.value = "";
 
@@ -586,6 +598,7 @@ if (newEventForm) {
         isVisible: true,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
+        tags: tags.length ? tags : null,
       });
 
       if (eventSaveStatus)
@@ -731,11 +744,24 @@ function showNewsDetail(index) {
         </select>
       </label>
 
-      <label class="form-label">
+            <label class="form-label">
         Kısa Özet
         <textarea id="edit-news-summary" class="form-input" rows="2">${escapeHtml(
           item.summary || ""
         )}</textarea>
+      </label>
+
+      <label class="form-label form-label-full">
+        Etiketler (virgülle ayır)
+        <input
+          type="text"
+          id="edit-news-tags"
+          class="form-input"
+          value="${escapeHtml(
+            Array.isArray(item.tags) ? item.tags.join(", ") : ""
+          )}"
+          placeholder="arkeoloji, roma, yol ağı"
+        />
       </label>
 
       <label class="form-label">
@@ -744,6 +770,7 @@ function showNewsDetail(index) {
           item.content || ""
         )}</textarea>
       </label>
+
 
       <label class="form-label form-label-full">
         Kaynak
@@ -803,6 +830,7 @@ function showNewsDetail(index) {
     "edit-news-source-label"
   );
   const editCardTypeInput = document.getElementById("edit-news-card-type");
+  const editTagsInput = document.getElementById("edit-news-tags");
 
   const editImagesRows = document.getElementById("edit-news-images-rows");
   const editAddImageRowBtn = document.getElementById("edit-news-add-image-row");
@@ -836,14 +864,19 @@ function showNewsDetail(index) {
 
     const title = editTitleInput.value.trim();
     const category = editCategoryInput.value.trim();
-    const summary = editSummaryInput.value.trim();
-    const content = editContentInput.value.trim();
+    const summary = editSummaryInput.value;
+    const content = editContentInput.value;
     const isFeatured = editFeaturedInput.value === "true";
     const isVisibleNew = editVisibleInput.value === "true";
+    const newsTagsInput = document.getElementById("news-tags");
 
     const cardTypeRaw = editCardTypeInput?.value || "";
     const cardType = cardTypeRaw.trim() || null;
-
+    const rawTags = editTagsInput?.value.trim() || "";
+    const tags = rawTags
+      .split(",")
+      .map((t) => t.trim())
+      .filter((t) => t.length > 0);
     const sourceUrl = editSourceUrlInput?.value.trim() || "";
     const sourceLabel = editSourceLabelInput?.value.trim() || "";
     const imagesFinal = readEditNewsImageRows();
@@ -861,11 +894,12 @@ function showNewsDetail(index) {
         summary: summary || null,
         content: content || null,
         isFeatured,
-        cardType, // 👈 edit tarafında da güncelliyoruz
+        cardType,
         isVisible: isVisibleNew,
         images: imagesFinal.length ? imagesFinal : null,
         sourceUrl: sourceUrl || null,
         sourceLabel: sourceLabel || null,
+        tags: tags.length ? tags : null, // 👈 YENİ
         updatedAt: serverTimestamp(),
       });
 

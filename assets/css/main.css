@@ -515,6 +515,34 @@ body::before {
 }
 
 /* =========================
+   ETİKETLER
+   ========================= */
+.card-footer-row {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 11px;
+}
+
+.card-inline-tags {
+  font-size: 11px;
+  color: var(--color-text-soft);
+  opacity: 0.9;
+}
+
+.tag-inline-link {
+  text-decoration: none;
+  color: var(--color-text-soft);
+}
+
+.tag-inline-link:hover {
+  text-decoration: underline;
+  color: var(--color-link);
+}
+
+/* =========================
    SLIDER
    ========================= */
 
@@ -1457,6 +1485,7 @@ body::before {
   font-size: 15px;
   line-height: 1.8;
   color: var(--color-text-muted);
+  white-space: pre-wrap;
 }
 .article-card .card-media.slider .slides {
   width: 100%;
@@ -1471,5 +1500,173 @@ body::before {
   margin: 0 0 1em;
   font-size: 15px;
   line-height: 1.8;
+  white-space: pre-wrap;
   color: var(--color-text-muted);
+}
+/* =========================================
+   UI COMPACT v3 – ultra minimal
+   ========================================= */
+
+/* Genel font */
+body {
+  font-size: 12px;
+}
+
+/* HEADER */
+.top-bar {
+  padding: 6px 12px;
+  gap: 12px;
+}
+.logo-main {
+  font-size: 16px;
+}
+.logo-sub {
+  font-size: 9px;
+}
+.main-nav a {
+  font-size: 9px;
+  padding: 3px 8px;
+}
+
+/* Search bar */
+.search-bar {
+  padding: 6px 12px;
+}
+.search-bar input {
+  padding: 7px 9px;
+  font-size: 12.5px;
+}
+
+/* Layout */
+.site-main {
+  margin: 12px auto 20px;
+  padding: 0 12px;
+}
+.layout-grid {
+  gap: 12px;
+}
+
+/* Kartlar – hepsi bir kademe daha sıkı */
+.card {
+  padding: 10px 12px 12px;
+  border-radius: 8px;
+  box-shadow: var(--shadow-soft);
+}
+.news-grid-small .card {
+  padding: 8px 10px 10px;
+}
+
+/* Manşet */
+.card-featured {
+  min-height: 205px;
+}
+.card-featured > .card-tag,
+.card-featured > .card-title,
+.card-featured > .card-meta,
+.card-featured > .card-text {
+  padding: 0 12px;
+}
+.card-featured .card-title {
+  font-size: 17px;
+}
+
+/* Tipografi */
+.card-tag {
+  font-size: 9px;
+  padding: 2px 8px;
+}
+.card-title {
+  font-size: 14px;
+}
+.card-meta {
+  font-size: 10px;
+}
+.card-text {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* Yatay split kart */
+.news-grid-small .card.card-small--split .card-title {
+  font-size: 14px;
+}
+.news-grid-small .card.card-small--split .card-meta {
+  font-size: 10px;
+}
+.news-grid-small .card.card-small--split {
+  column-gap: 14px;
+  padding: 10px 12px;
+}
+
+/* Slider butonlar */
+.slider-btn {
+  width: 22px;
+  height: 22px;
+  font-size: 15px;
+}
+
+/* Sidebar */
+.sidebar-block {
+  padding: 10px;
+}
+.sidebar-title {
+  font-size: 11px;
+}
+.event-date {
+  font-size: 10px;
+  padding: 4px 3px;
+}
+
+/* Etkinlik listesi */
+.event-list li {
+  padding: 4px 6px;
+  gap: 6px;
+}
+.event-info strong {
+  font-size: 12px;
+}
+.event-info span {
+  font-size: 10px;
+}
+
+/* Footer */
+.site-footer {
+  padding: 10px 0 6px;
+  font-size: 11px;
+}
+.footer-bottom {
+  font-size: 9px;
+}
+.article-footer-row {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 11px;
+}
+
+.article-footer-row .card-link {
+  margin-top: 0; /* var olan margin'i sıfırla */
+}
+
+#article-tags-inline {
+  color: var(--color-text-soft);
+}
+.card-footer-row,
+.article-footer-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap; /* 👈 aynı satırda tut */
+}
+
+.card-inline-tags,
+.article-tags-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap; /* 👈 kayma olmasın */
+  font-size: 11px;
+  color: var(--color-text-soft);
 }

@@ -12,6 +12,11 @@ import { renderFeaturedCard, renderSmallNews } from "./newsCards.js";
 import { setupEventModal, openEventModal } from "../events/eventModal.js";
 import { isRecordVisible } from "../helpers.js";
 
+function getActiveTagFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const tag = params.get("tag");
+  return tag ? tag.trim() : null;
+}
 /* ---------------------------------------------------
    0) HABER CACHE
 --------------------------------------------------- */
@@ -21,27 +26,62 @@ let NEWS_CACHE = [];
    1) HABERLERİ YÜKLE + ARAMA İÇİN CACHE
 --------------------------------------------------- */
 async function loadNews() {
+  // 1) URL'den aktif etiketi al
+  const activeTag = getActiveTagFromUrl();
+
+  // 2) Firestore’dan haberleri çek
   const ref = collection(db, "news");
   const q = query(ref, orderBy("createdAt", "desc"));
   const snap = await getDocs(q);
 
   NEWS_CACHE = [];
-  snap.forEach((doc) => NEWS_CACHE.push({ id: doc.id, ...doc.data() }));
+  snap.forEach((docSnap) =>
+    NEWS_CACHE.push({ id: docSnap.id, ...docSnap.data() })
+  );
 
+  // 3) Yayında olan kayıtlar
   const visible = NEWS_CACHE.filter(isRecordVisible);
 
-  if (!visible.length) return;
+  // 4) Listeyi başta tüm görünür haberler olarak ayarla
+  let list = visible;
 
-  // 1. haber manşet
-  renderFeaturedCard(visible[0]);
+  // 5) Eğer URL’de tag varsa, bu etikete göre filtrele
+  if (activeTag) {
+    const tagLower = activeTag.toLowerCase();
 
-  // geri kalan küçük kartlar
-  renderSmallNews(visible.slice(1));
+    list = visible.filter((n) => {
+      if (!Array.isArray(n.tags)) return false;
+      return n.tags.some((t) => String(t).toLowerCase() === tagLower);
+    });
+  }
 
-  // haber ticker
+  // 6) Hiç haber kalmadıysa mesaj göster
+  if (!list.length) {
+    const featuredContainer = document.querySelector(".card-featured");
+    const smallGrid = document.querySelector(".news-grid-small");
+    if (featuredContainer) {
+      featuredContainer.innerHTML = activeTag
+        ? "<p>Bu etikete ait haber bulunamadı.</p>"
+        : "<p>Haber bulunamadı.</p>";
+    }
+    if (smallGrid) {
+      smallGrid.innerHTML = "";
+    }
+
+    // Ticker yine de tüm görünür haberlerden dönsün
+    loadNewsTicker(visible);
+    setupNewsSearch();
+    return;
+  }
+
+  // 7) Manşet + diğer haberler (tag varsa filtrelenmiş hali)
+  renderFeaturedCard(list[0]);
+  renderSmallNews(list.slice(1));
+
+  // 8) Ticker tüm görünür haberlerden devam etsin
   loadNewsTicker(visible);
 
-  // 🔍 Arama input'unu bağla
+  // 9) Arama kutusunu hazırla
   setupNewsSearch();
 }
 
@@ -366,15 +406,38 @@ function setupNewsSearch() {
     renderSmallNews(filtered, { forceType: "split" });
   });
 }
+function getSearchFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const q = params.get("q");
+  return q ? q.trim() : "";
+}
+
+function applyInitialSearchFromUrl() {
+  const initial = getSearchFromUrl();
+  if (!initial) return;
+
+  const input = document.getElementById("search-input");
+  if (!input) return;
+
+  // Arama kutusunu doldur
+  input.value = initial;
+
+  // Mevcut input event'ini tetikle → setupNewsSearch'teki filtre çalışsın
+  const evt = new Event("input", { bubbles: true });
+  input.dispatchEvent(evt);
+}
 
 /* ---------------------------------------------------
    6) ANA SAYFA BAŞLAT
 --------------------------------------------------- */
 async function initHome() {
-  await loadNews();
+  await loadNews(); // Haberleri ve arama sistemini kur
   await loadUpcomingEvents();
   await loadNearbyEvents();
   setupEventModal();
+
+  // 👇 URL'de q varsa, sayfa açılır açılmaz aramayı çalıştır
+  applyInitialSearchFromUrl();
 }
 
 document.addEventListener("DOMContentLoaded", initHome);
