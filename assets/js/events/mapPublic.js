@@ -10,6 +10,23 @@ import { formatDate, escapeHtml, isRecordVisible } from "../helpers.js";
 import { createLareneaMap } from "./mapBase.js";
 import { buildEventPopupHtml } from "./eventCards.js";
 
+function setupEventSearch() {
+  const input = document.getElementById("search-events-input");
+  const list = document.getElementById("map-events-list");
+
+  if (!input || !list) return;
+
+  input.addEventListener("input", () => {
+    const text = input.value.toLowerCase();
+
+    // ⬇⬇⬇ BURASI ÖNEMLİ: .map-event-row DEĞİL, .map-event-item OLACAK
+    list.querySelectorAll(".map-event-item").forEach((row) => {
+      const t = row.innerText.toLowerCase();
+      row.style.display = t.includes(text) ? "" : "none";
+    });
+  });
+}
+
 async function loadEventsOnMap() {
   const map = createLareneaMap("events-map", {
     center: [39.0, 35.0],
@@ -199,6 +216,7 @@ async function loadEventsOnMap() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  setupEventSearch();
   loadEventsOnMap().catch((err) =>
     console.error("Etkinlik haritası yükleme hatası:", err)
   );

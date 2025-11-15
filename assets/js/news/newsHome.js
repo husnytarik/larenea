@@ -9,24 +9,26 @@ import {
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 import { renderFeaturedCard, renderSmallNews } from "./newsCards.js";
-
 import { setupEventModal, openEventModal } from "../events/eventModal.js";
-
 import { isRecordVisible } from "../helpers.js";
 
 /* ---------------------------------------------------
-   1) HABERLERİ YÜKLE
+   0) HABER CACHE
+--------------------------------------------------- */
+let NEWS_CACHE = [];
+
+/* ---------------------------------------------------
+   1) HABERLERİ YÜKLE + ARAMA İÇİN CACHE
 --------------------------------------------------- */
 async function loadNews() {
   const ref = collection(db, "news");
   const q = query(ref, orderBy("createdAt", "desc"));
   const snap = await getDocs(q);
 
-  const list = [];
-  snap.forEach((doc) => list.push({ id: doc.id, ...doc.data() }));
+  NEWS_CACHE = [];
+  snap.forEach((doc) => NEWS_CACHE.push({ id: doc.id, ...doc.data() }));
 
-  // görünür olanlar
-  const visible = list.filter(isRecordVisible);
+  const visible = NEWS_CACHE.filter(isRecordVisible);
 
   if (!visible.length) return;
 
@@ -38,6 +40,9 @@ async function loadNews() {
 
   // haber ticker
   loadNewsTicker(visible);
+
+  // 🔍 Arama input'unu bağla
+  setupNewsSearch();
 }
 
 /* ---------------------------------------------------
@@ -98,7 +103,6 @@ async function loadUpcomingEvents() {
     return;
   }
 
-  // id → event map'i
   const eventMap = new Map();
   upcoming.forEach((ev) => eventMap.set(ev.id, ev));
 
@@ -135,7 +139,6 @@ async function loadUpcomingEvents() {
     })
     .join("");
 
-  // 🔗 Butonlara modal açma davranışı ekle
   listEl
     .querySelectorAll("li[data-event-id] .nearby-event-btn")
     .forEach((btn) => {
@@ -153,7 +156,7 @@ async function loadUpcomingEvents() {
 }
 
 /* ---------------------------------------------------
-   4) YAKININIZDAKİ ETKİNLİKLER (lat/lng + mesafe sınırı + modal)
+   4) YAKININIZDAKİ ETKİNLİKLER
 --------------------------------------------------- */
 async function loadNearbyEvents() {
   const listEl = document.getElementById("home-nearby-events");
@@ -185,7 +188,6 @@ async function loadNearbyEvents() {
 
       const visible = eventsAll.filter(isRecordVisible);
 
-      // Bugünden sonrası
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
@@ -230,7 +232,7 @@ async function loadNearbyEvents() {
           dist: distanceKm(userLat, userLng, ev.lat, ev.lng),
         }));
 
-      const MAX_DISTANCE_KM = 50; // yakını = 50 km
+      const MAX_DISTANCE_KM = 50;
 
       const nearby = withDistance
         .filter((item) => item.dist <= MAX_DISTANCE_KM)
@@ -243,7 +245,6 @@ async function loadNearbyEvents() {
         return;
       }
 
-      // id → event map (kolay erişim için)
       const eventMap = new Map();
       nearby.forEach(({ ev }) => eventMap.set(ev.id, ev));
 
@@ -283,7 +284,6 @@ async function loadNearbyEvents() {
         })
         .join("");
 
-      // 🔗 Butonlara modal açma davranışı ekle
       listEl
         .querySelectorAll("li[data-event-id] .nearby-event-btn")
         .forEach((btn) => {
@@ -311,7 +311,64 @@ async function loadNearbyEvents() {
 }
 
 /* ---------------------------------------------------
-   5) ANA SAYFA BAŞLAT
+   5) HABER ARAMA
+--------------------------------------------------- */
+function setupNewsSearch() {
+  const input = document.getElementById("search-input");
+  const grid = document.querySelector(".news-grid-small");
+  const featuredCard = document.querySelector(".card-featured");
+  if (!input || !grid || !featuredCard) return;
+
+  input.addEventListener("input", () => {
+    const text = input.value.trim().toLowerCase();
+    const hasQuery = text.length > 0;
+
+    // Sadece görünür kayıtlar üzerinden çalışalım
+    const visibleAll = NEWS_CACHE.filter(isRecordVisible);
+
+    // 🔹 Arama YOKSA → eski layout'a dön
+    if (!hasQuery) {
+      if (!visibleAll.length) {
+        grid.innerHTML =
+          "<p style='padding:12px;opacity:.7;'>Haber bulunamadı.</p>";
+        featuredCard.style.display = "none";
+        return;
+      }
+
+      // Manşet tekrar görünsün
+      featuredCard.style.display = "";
+
+      // Klasik düzen: manşet + küçük kartlar (karışık tip)
+      renderFeaturedCard(visibleAll[0]);
+      renderSmallNews(visibleAll.slice(1));
+      return;
+    }
+
+    // 🔹 Arama VARSA → manşeti gizle, sadece split sonuçları göster
+    const filtered = visibleAll.filter((n) => {
+      return (
+        (n.title || "").toLowerCase().includes(text) ||
+        (n.summary || "").toLowerCase().includes(text) ||
+        (n.category || "").toLowerCase().includes(text)
+      );
+    });
+
+    // manşet alanını gizle
+    featuredCard.style.display = "none";
+
+    if (!filtered.length) {
+      grid.innerHTML =
+        "<p style='padding:12px;opacity:.7;'>Sonuç bulunamadı.</p>";
+      return;
+    }
+
+    // ✅ Arama sonuçları: HEPSİ split tipinde, yanyana satırlar
+    renderSmallNews(filtered, { forceType: "split" });
+  });
+}
+
+/* ---------------------------------------------------
+   6) ANA SAYFA BAŞLAT
 --------------------------------------------------- */
 async function initHome() {
   await loadNews();

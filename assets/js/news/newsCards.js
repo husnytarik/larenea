@@ -148,10 +148,21 @@ export function renderFeaturedCard(news) {
   const card = document.querySelector(".card-featured");
   if (!card || !news) return;
 
+  // 🔹 1) Eski medya ve caption'ı temizle (sadece manşet kartın içinde)
+  const oldMedia = card.querySelector(".card-media.slider");
+  if (oldMedia) oldMedia.remove();
+
+  const oldCaption = card.querySelector(".slider-caption");
+  if (oldCaption) oldCaption.remove();
+
+  card.classList.remove("has-media");
+
+  // 🔹 2) Görselleri hazırla
   const images = (Array.isArray(news.images) ? news.images : [])
     .map(decodeImageEntry)
     .filter(Boolean);
 
+  // 🔹 3) Yeni slider'ı ekle (senin eski kodun aynen)
   if (images.length) {
     const media = document.createElement("div");
     media.className = "card-media slider";
@@ -197,6 +208,7 @@ export function renderFeaturedCard(news) {
     card.classList.add("has-media");
   }
 
+  // 🔹 4) Metin alanları (hiç değiştirmedim)
   const tagEl = card.querySelector(".card-tag");
   const titleEl = card.querySelector(".card-title");
   const metaEl = card.querySelector(".card-meta");
@@ -221,7 +233,9 @@ export function renderFeaturedCard(news) {
  *  - vertical / split / mini / banner  (admin cardType ile)
  * NOT: Burada da haber kaynağı artık gösterilmiyor.
  */
-export function renderSmallNews(items) {
+export function renderSmallNews(items, options = {}) {
+  const { forceType } = options; // 🔸 yeni
+
   const grid = document.querySelector(".news-grid-small");
   if (!grid) return;
 
@@ -231,9 +245,14 @@ export function renderSmallNews(items) {
     const card = document.createElement("article");
     card.className = "card card-small";
 
-    const typeClass = getCardTypeClass(news, index);
-    if (typeClass) {
-      card.classList.add(typeClass);
+    // 🔹 Kart tipi: eğer forceType geldiyse onu kullan, yoksa eski mantık
+    if (forceType === "split") {
+      card.classList.add("card-small--split");
+    } else {
+      const typeClass = getCardTypeClass(news, index);
+      if (typeClass) {
+        card.classList.add(typeClass);
+      }
     }
 
     const images = (Array.isArray(news.images) ? news.images : [])

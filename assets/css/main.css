@@ -120,7 +120,7 @@ body::before {
   font-family: var(--font-logo);
 }
 .logo-sub {
-  font-size: 12.8px;
+  font-size: 12px;
   text-transform: none;
   letter-spacing: 0.12em;
   opacity: 0.8;
@@ -184,7 +184,7 @@ body::before {
   display: inline-block;
   white-space: nowrap;
   animation: ticker-scroll 25s linear infinite;
-  font-size: 13px;
+  font-size: 11px;
 }
 .ticker-items .ticker-item {
   display: inline-block;
@@ -212,6 +212,23 @@ body::before {
   to {
     transform: translateX(-50%);
   }
+}
+
+.search-bar {
+  width: 100%;
+  background: var(--color-bg-alt);
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.search-bar input {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border-strong);
+  border-radius: 6px;
+  color: var(--color-text);
+  font-size: 15px;
 }
 
 /* layout */
@@ -1321,9 +1338,9 @@ body::before {
   background: var(--color-bg-alt);
   border-radius: var(--radius-lg);
   border: 1px solid var(--color-border-strong);
-  max-width: 520px;
-  width: 90%;
-  max-height: 80%;
+  max-width: 500px;
+  width: 80%;
+  max-height: 50%;
   box-shadow: var(--shadow-strong);
   overflow: hidden;
   display: flex;
