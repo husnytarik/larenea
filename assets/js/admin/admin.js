@@ -38,6 +38,7 @@ const newsFeaturedInput = document.getElementById("news-featured");
 const newsSummaryInput = document.getElementById("news-summary");
 const newsContentInput = document.getElementById("news-content");
 const newsSaveStatus = document.getElementById("news-save-status");
+const newsCardTypeSelect = document.getElementById("news-card-type");
 
 // yeni: kaynak alanları
 const newsSourceUrlInput = document.getElementById("news-source-url");
@@ -438,6 +439,9 @@ if (newNewsForm) {
     const content = newsContentInput.value.trim();
     const isFeatured = newsFeaturedInput.value === "true";
 
+    const cardTypeRaw = newsCardTypeSelect?.value || "";
+    const cardType = cardTypeRaw.trim() || null;
+
     const sourceUrl = newsSourceUrlInput?.value.trim() || "";
     const sourceLabel = newsSourceLabelInput?.value.trim() || "";
 
@@ -455,6 +459,7 @@ if (newNewsForm) {
         summary: summary || null,
         content: content || null,
         isFeatured,
+        cardType, // 👈 yeni alan
         isVisible: true,
         images: images.length ? images : null,
         sourceUrl: sourceUrl || null,
@@ -466,6 +471,7 @@ if (newNewsForm) {
       if (newsSaveStatus) newsSaveStatus.textContent = "✔ Haber kaydedildi.";
       newNewsForm.reset();
       newsFeaturedInput.value = "false";
+      if (newsCardTypeSelect) newsCardTypeSelect.value = "";
 
       // Kaynak alanlarını ve görsel satırlarını sıfırla
       if (newsSourceUrlInput) newsSourceUrlInput.value = "";
@@ -705,6 +711,27 @@ function showNewsDetail(index) {
       </label>
 
       <label class="form-label">
+        Kart Tipi
+        <select id="edit-news-card-type" class="form-input">
+          <option value="" ${
+            !item.cardType ? "selected" : ""
+          }>Varsayılan</option>
+          <option value="vertical" ${
+            item.cardType === "vertical" ? "selected" : ""
+          }>Dikey (vertical)</option>
+          <option value="split" ${
+            item.cardType === "split" ? "selected" : ""
+          }>Yan yana (split)</option>
+          <option value="mini" ${
+            item.cardType === "mini" ? "selected" : ""
+          }>Mini</option>
+          <option value="banner" ${
+            item.cardType === "banner" ? "selected" : ""
+          }>Banner</option>
+        </select>
+      </label>
+
+      <label class="form-label">
         Kısa Özet
         <textarea id="edit-news-summary" class="form-input" rows="2">${escapeHtml(
           item.summary || ""
@@ -775,6 +802,7 @@ function showNewsDetail(index) {
   const editSourceLabelInput = document.getElementById(
     "edit-news-source-label"
   );
+  const editCardTypeInput = document.getElementById("edit-news-card-type");
 
   const editImagesRows = document.getElementById("edit-news-images-rows");
   const editAddImageRowBtn = document.getElementById("edit-news-add-image-row");
@@ -812,6 +840,10 @@ function showNewsDetail(index) {
     const content = editContentInput.value.trim();
     const isFeatured = editFeaturedInput.value === "true";
     const isVisibleNew = editVisibleInput.value === "true";
+
+    const cardTypeRaw = editCardTypeInput?.value || "";
+    const cardType = cardTypeRaw.trim() || null;
+
     const sourceUrl = editSourceUrlInput?.value.trim() || "";
     const sourceLabel = editSourceLabelInput?.value.trim() || "";
     const imagesFinal = readEditNewsImageRows();
@@ -829,6 +861,7 @@ function showNewsDetail(index) {
         summary: summary || null,
         content: content || null,
         isFeatured,
+        cardType, // 👈 edit tarafında da güncelliyoruz
         isVisible: isVisibleNew,
         images: imagesFinal.length ? imagesFinal : null,
         sourceUrl: sourceUrl || null,

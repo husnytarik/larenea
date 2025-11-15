@@ -18,36 +18,11 @@ function decodeImageEntry(entry) {
 }
 
 /**
- * Haber için kaynak linki HTML'i üretir.
- * news.sourceUrl ve/veya news.sourceLabel doldurulmuşsa gösterilir.
- * NOT: Artık her kartta .card-meta-source içine basıyoruz.
- */
-function buildSourceHtml(news) {
-  const url = (news.sourceUrl || "").trim();
-  const rawLabel = (news.sourceLabel || "").trim();
-
-  if (!url && !rawLabel) return "";
-
-  const label = rawLabel || url;
-  const safeUrl = escapeHtml(url || "#");
-  const safeLabel = escapeHtml(label);
-
-  return `
-    <div class="footer-bottom">
-      <a href="${safeUrl}"
-         target="_blank"
-         rel="noopener noreferrer"
-         class="footer-link">
-        ${safeLabel}
-      </a>
-    </div>
-  `;
-}
-
-/**
  * Ortak slider davranışı
  * container: .slider
- * captionBox: slider içindeki açıklama kutusu (zorunlu değil)
+ * captionBox: slider içindeki açıklama kutusu
+ *  - Burada sadece GÖRSEL altyazısı (caption) gösteriyoruz.
+ *  - Haber kaynağı (sourceUrl/sourceLabel) artık burada YOK.
  */
 function setupSlider(container, captionBox) {
   if (!container) return;
@@ -63,28 +38,34 @@ function setupSlider(container, captionBox) {
 
   function updateCaption() {
     if (!captionBox) return;
-    const current = slides[index];
-    const caption = current.dataset.caption || "";
-    const link = current.dataset.link || current.src || "";
 
-    if (!caption && !link) {
+    const current = slides[index];
+    if (!current) {
       captionBox.innerHTML = "";
       return;
     }
 
-    const safeLink = escapeHtml(link);
-    const safeCaption = escapeHtml(caption || link);
+    const caption = current.dataset.caption || "";
+    const url = current.dataset.url || "";
 
-    captionBox.innerHTML = `
-      <div class="footer-bottom">
-        <a href="${safeLink}"
+    if (!caption) {
+      captionBox.innerHTML = "";
+      return;
+    }
+
+    // URL varsa caption'ı link yap, yoksa düz yazı
+    if (url) {
+      captionBox.innerHTML = `
+        <a href="${url}"
+           class="footer-link"
            target="_blank"
-           rel="noopener noreferrer"
-           class="footer-link">
-          ${safeCaption}
+           rel="noopener noreferrer">
+          ${caption}
         </a>
-      </div>
-    `;
+      `;
+    } else {
+      captionBox.textContent = caption;
+    }
   }
 
   function showSlide(i) {
@@ -115,7 +96,7 @@ function setupSlider(container, captionBox) {
     });
   });
 
-  // Resmin sağ/soluna tıklayınca da ilerlesin
+  // Resme tıklayınca sağ/sol alanına göre slide değişsin
   container.addEventListener("click", (e) => {
     if (e.target.closest(".slider-btn") || e.target.closest(".dot")) return;
     const rect = container.getBoundingClientRect();
@@ -127,15 +108,41 @@ function setupSlider(container, captionBox) {
 }
 
 /**
+ * Admin panelde seçilen cardType değerini CSS class'a çevirir.
+ * cardType yoksa, eski davranış (index'e göre wide / tall) korunur.
+ */
+function getCardTypeClass(news, index) {
+  const raw = (news.cardType || "").toString().trim().toLowerCase();
+
+  switch (raw) {
+    case "vertical":
+      return "card-small--vertical"; // dikey büyük kart
+    case "split":
+      return "card-small--split"; // solda görsel, sağda metin
+    case "mini":
+      return "card-small--mini"; // küçük etkinlik tipi kart
+    case "banner":
+      return "card-small--banner"; // yatay geniş kart
+    default: {
+      // Eski davranışı koru: cardType yoksa index'e göre wide/tall
+      const mod = index % 3;
+      if (mod === 1) return "card-small--wide";
+      if (mod === 2) return "card-small--tall";
+      return "";
+    }
+  }
+}
+
+/**
  * Manşet haberi karta basar.
  * .card-featured içinde:
  * - .card-tag
  * - .card-title
  * - .card-meta
  * - .card-text
- * - .card-meta-source
  * - .card-link
- * zaten HTML'de varsa onları doldurur.
+ * dolduruluyor.
+ * NOT: Artık burada haber KAYNAĞI gösterilmiyor.
  */
 export function renderFeaturedCard(news) {
   const card = document.querySelector(".card-featured");
@@ -156,8 +163,8 @@ export function renderFeaturedCard(news) {
             (img, i) => `
               <img
                 src="${escapeHtml(img.url)}"
+                data-url="${escapeHtml(img.url)}"
                 data-caption="${escapeHtml(img.caption)}"
-                data-link="${escapeHtml(img.url)}"
                 class="${i === 0 ? "active" : ""}"
                 alt="${escapeHtml(news.title || "")}"
               />
@@ -195,7 +202,6 @@ export function renderFeaturedCard(news) {
   const metaEl = card.querySelector(".card-meta");
   const textEl = card.querySelector(".card-text");
   const linkEl = card.querySelector(".card-link");
-  const sourceMetaEl = card.querySelector(".card-meta-source");
 
   if (tagEl) tagEl.textContent = news.category || "Haber";
   if (titleEl) titleEl.textContent = news.title || "";
@@ -206,22 +212,14 @@ export function renderFeaturedCard(news) {
     linkEl.href = `haber.html?id=${news.id}`;
     linkEl.textContent = "Haberi Oku";
   }
-
-  if (sourceMetaEl) {
-    const srcHtml = buildSourceHtml(news);
-    if (srcHtml) {
-      sourceMetaEl.innerHTML = srcHtml;
-      sourceMetaEl.style.display = "";
-    } else {
-      sourceMetaEl.innerHTML = "";
-      sourceMetaEl.style.display = "none";
-    }
-  }
 }
 
 /**
  * Küçük haber kartlarını grid içerisine basar.
- * Artık manşetle aynı bileşen yapısını kullanıyor.
+ * Kart tipleri:
+ *  - default (wide/tall index'e göre)
+ *  - vertical / split / mini / banner  (admin cardType ile)
+ * NOT: Burada da haber kaynağı artık gösterilmiyor.
  */
 export function renderSmallNews(items) {
   const grid = document.querySelector(".news-grid-small");
@@ -233,19 +231,20 @@ export function renderSmallNews(items) {
     const card = document.createElement("article");
     card.className = "card card-small";
 
-    // Basit layout çeşitliliği (sadece genişlik / yükseklik)
-    const mod = index % 3;
-    if (mod === 1) card.classList.add("card-small--wide");
-    if (mod === 2) card.classList.add("card-small--tall");
+    const typeClass = getCardTypeClass(news, index);
+    if (typeClass) {
+      card.classList.add(typeClass);
+    }
 
     const images = (Array.isArray(news.images) ? news.images : [])
       .map(decodeImageEntry)
       .filter(Boolean);
 
-    let mediaHtml = "";
+    const detailUrl = `haber.html?id=${news.id}`;
 
+    let mediaHtml = "";
     if (images.length > 0) {
-      // Tek görsel bile olsa her zaman slider yapısı kullanılıyor
+      card.classList.add("has-media");
       mediaHtml = `
         <div class="card-media slider">
           <div class="slides">
@@ -254,8 +253,8 @@ export function renderSmallNews(items) {
                 (img, i) => `
                   <img
                     src="${escapeHtml(img.url)}"
+                    data-url="${escapeHtml(img.url)}"
                     data-caption="${escapeHtml(img.caption)}"
-                    data-link="${escapeHtml(img.url)}"
                     class="${i === 0 ? "active" : ""}"
                     alt="${escapeHtml(news.title || "")}"
                   />
@@ -280,41 +279,52 @@ export function renderSmallNews(items) {
       `;
     }
 
-    // Manşetle aynı bileşen sırası:
-    // media -> (slider-caption) -> tag -> title -> meta -> text -> meta-source -> link
-    card.innerHTML = `
-      ${mediaHtml}
-      <div class="card-tag">${escapeHtml(news.category || "Haber")}</div>
-      <h4 class="card-title">${escapeHtml(news.title || "")}</h4>
-      <p class="card-meta">${formatDate(news.createdAt)}</p>
-      <p class="card-text">${escapeHtml(news.summary || "")}</p>
-      <div class="card-meta-source"></div>
-      <a href="haber.html?id=${news.id}" class="card-link">Haberi Oku</a>
-    `;
+    const isSplit = card.classList.contains("card-small--split");
+
+    // SPLIT kart: solda görsel, sağda tek bir .card-content içinde
+    if (isSplit) {
+      card.innerHTML = `
+        ${mediaHtml}
+        <div class="card-content">
+          <div class="card-tag">${escapeHtml(news.category || "Haber")}</div>
+          <h4 class="card-title">${escapeHtml(news.title || "")}</h4>
+          <p class="card-meta">${formatDate(news.createdAt)}</p>
+        </div>
+      `;
+    } else {
+      // Diğer kart tipleri eski davranış (Haberi Oku vs)
+      card.innerHTML = `
+        ${mediaHtml}
+        <div class="card-tag">${escapeHtml(news.category || "Haber")}</div>
+        <h4 class="card-title">${escapeHtml(news.title || "")}</h4>
+        <p class="card-meta">${formatDate(news.createdAt)}</p>
+        <p class="card-text">${escapeHtml(news.summary || "")}</p>
+        <a href="${detailUrl}" class="card-link">Haberi Oku</a>
+      `;
+    }
 
     grid.appendChild(card);
 
-    // Kaynak bilgisini her kartta .card-meta-source içine yaz
-    const sourceMetaEl = card.querySelector(".card-meta-source");
-    if (sourceMetaEl) {
-      const srcHtml = buildSourceHtml(news);
-      if (srcHtml) {
-        sourceMetaEl.innerHTML = srcHtml;
-        sourceMetaEl.style.display = "";
-      } else {
-        sourceMetaEl.innerHTML = "";
-        sourceMetaEl.style.display = "none";
-      }
+    // Kartı tıklanabilir yap: WIDE + SPLIT tipleri
+    if (
+      card.classList.contains("card-small--wide") ||
+      card.classList.contains("card-small--split")
+    ) {
+      card.style.cursor = "pointer";
+      card.addEventListener("click", (evt) => {
+        const isSliderControl = evt.target.closest(".slider-btn, .slider-dots");
+        if (isSliderControl) return;
+        window.location.href = detailUrl;
+      });
     }
 
-    // Slider varsa küçük kartta da aynı davranış:
+    // Slider varsa küçük kartta da caption’ı kur
     if (images.length > 0) {
       const sliderEl = card.querySelector(".card-media.slider");
       if (sliderEl) {
         const captionBox = document.createElement("div");
         captionBox.className = "slider-caption";
         sliderEl.appendChild(captionBox);
-
         setupSlider(sliderEl, captionBox);
       }
     }

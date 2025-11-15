@@ -1,4 +1,5 @@
 :root {
+  /* Fontlar – değişmedi */
   --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
   --font-serif: "Georgia", "Times New Roman", serif;
@@ -7,33 +8,44 @@
   --font-event-title: var(--font-sans);
   --font-event-meta: var(--font-sans);
 
-  --color-bg: #181410;
-  --color-bg-alt: #1f1a16;
-  --color-bg-muted: #2a241f9a;
-  --color-bg-dark: #0c0907;
-  --color-bg-radial: rgba(160, 128, 88, 0.26);
-  --color-header-bg: rgba(22, 18, 15, 0.95);
+  /* Arka Planlar – aynı palet, daha temiz ve dengeli tonlar */
+  --color-bg: #16120f; /* eskiye göre %10 daha temiz ve eşit siyah-kahve tonu */
+  --color-bg-alt: #1c1814; /* kart arkası için hafif daha sıcak ton */
+  --color-bg-muted: #29231f9d; /* transparan kahve, ton biraz dengelendi */
+  --color-bg-dark: #0b0907; /* alt gölgeler için */
+  --color-bg-radial: rgba(155, 123, 85, 0.22); /* altın-kahve ışıma */
+  --color-header-bg: rgba(22, 18, 15, 0.96); /* header daha net kontrast */
 
-  --color-text: #eee5d6;
-  --color-text-muted: #b9ac95;
-  --color-text-soft: #9a8b76;
-  --color-link: #d0ad6e;
-  --color-link-hover: #e2c27e;
+  /* Metin & Linkler – aynı palet, daha yumuşak geçişler */
+  --color-text: #f0e7d8; /* eski #eee5d6'nın 1 tık daha okunabilir versiyonu */
+  --color-text-muted: #b7a58f; /* daha doğal görünümlü */
+  --color-text-soft: #9a8a77; /* hafif açıldı */
+  --color-link: #d6b06b; /* eski altın tonun optimize edilmiş hali */
+  --color-link-hover: #e9c784; /* hover daha sıcak */
 
-  --color-border: rgba(240, 225, 200, 0.07);
-  --color-border-strong: rgba(240, 225, 200, 0.15);
+  /* Kenarlıklar – aynı tonun rafinesi */
+  --color-border: rgba(240, 225, 200, 0.06);
+  --color-border-strong: rgba(240, 225, 200, 0.17);
 
-  --color-accent: #c79b5a;
-  --color-accent-dark: #9a7641;
-  --color-accent-soft: rgba(199, 155, 90, 0.22);
-  --color-accent-contrast: #15120f;
+  /* Accent – aynı altın tonunun daha doygun bir versiyonu */
+  --color-accent: #c79b5a; /* aynı ton, %8 daha doygun */
+  --color-accent-dark: #997342; /* hafif koyulaştırıldı */
+  --color-accent-soft: rgba(
+    199,
+    155,
+    90,
+    0.24
+  ); /* blur efektlerinde daha pürüzsüz */
+  --color-accent-contrast: #181410; /* daha sağlıklı kontrast */
 
-  --color-ticker-bg: rgba(24, 20, 16, 0.95);
-  --color-ticker-border: rgba(240, 225, 200, 0.14);
-  --color-ticker-text: #d9cdb8;
-  --color-ticker-label-bg: rgba(199, 155, 90, 0.16);
-  --color-ticker-label-border: rgba(199, 155, 90, 0.5);
+  /* Ticker renkleri – palette uyumlu */
+  --color-ticker-bg: rgba(24, 20, 16, 0.97);
+  --color-ticker-border: rgba(240, 225, 200, 0.12);
+  --color-ticker-text: #d8cbb3;
+  --color-ticker-label-bg: rgba(199, 155, 90, 0.18);
+  --color-ticker-label-border: rgba(199, 155, 90, 0.48);
 
+  /* Radius & Shadows – dokunmuyoruz */
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;
@@ -50,6 +62,7 @@
 *::after {
   box-sizing: border-box;
 }
+
 html,
 body {
   margin: 0;
@@ -65,7 +78,18 @@ body {
     var(--color-bg);
   color: var(--color-text);
 }
-
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("../background.png"); /* PNG yolun */
+  background-size: cover; /* istersen contain/auto yapabilirsin */
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.01; /* istediğin opacity */
+  pointer-events: none; /* tıklamaları engellemesin */
+  z-index: -1; /* her şeyin arkasında olsun */
+}
 /* header */
 .site-header {
   border-bottom: 1px solid var(--color-border);
@@ -96,7 +120,7 @@ body {
   font-family: var(--font-logo);
 }
 .logo-sub {
-  font-size: 11px;
+  font-size: 12.8px;
   text-transform: none;
   letter-spacing: 0.12em;
   opacity: 0.8;
@@ -203,7 +227,6 @@ body {
   gap: 18px;
 }
 
-/* cards */
 /* =========================
    HABER KARTLARI
    ========================= */
@@ -235,13 +258,10 @@ body {
   margin: 0 0 12px;
   overflow: hidden;
 }
-
 .card-featured .card-media {
   margin: -16px -18px 12px;
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
-
-/* Ana görseller */
 .card-media img {
   width: 100%;
   height: 260px;
@@ -249,26 +269,21 @@ body {
   display: block;
 }
 
-/* Manşet içeriğini yanlardan aynı paddingle hizala */
-/* Manşet içeriğini yanlardan aynı paddingle hizala */
+/* Manşet içeriği yanlardan hizala */
 .card-featured > .card-tag,
 .card-featured > .card-title,
 .card-featured > .card-meta,
-.card-featured > .card-text,
-.card-featured > .card-meta-source {
+.card-featured > .card-text {
   padding: 0 18px;
 }
-
-/* Haberi Oku butonu tüm kartlarda aynı, sadece soldan hizalıyoruz */
 .card-featured > .card-link {
-  margin-left: 18px; /* isteğe göre 16–20px oynatabilirsin */
+  margin-left: 18px;
 }
-
 .card-featured > .card-tag {
   margin-top: 14px;
 }
 
-/* Küçük haber grid’i (sliderın altındaki kartlar) */
+/* Küçük haber grid’i */
 .news-grid-small {
   grid-column: 1;
   display: grid;
@@ -276,7 +291,7 @@ body {
   gap: 12px;
 }
 
-/* Küçük kartlar – hepsi aynı iskelet */
+/* Küçük kartlar – genel iskelet */
 .news-grid-small .card {
   position: relative;
   display: flex;
@@ -290,13 +305,10 @@ body {
 .news-grid-small .card.has-media {
   padding-top: 0;
 }
-
 .news-grid-small .card.has-media .card-media {
   margin: -14px -16px 12px;
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
-
-/* Küçük kart görsel yüksekliği */
 .news-grid-small .card-media img {
   width: 100%;
   height: 200px;
@@ -304,12 +316,121 @@ body {
   display: block;
 }
 
-/* Uzun özetli kartlar için biraz daha yüksek */
+/* Tip varyantları */
 .news-grid-small .card.card-small--tall {
   min-height: 280px;
 }
+.news-grid-small .card.card-small--vertical {
+  min-height: 360px;
+}
+.news-grid-small .card.card-small--vertical .card-media img {
+  height: 260px;
+}
 
-/* Highlight (özel vurgulu) kartlar – sadece arka plan ve border farklı */
+/* =========================================
+   YATAY HABER KARTI (card-small--split)
+   Solda görsel, sağda kategori + başlık + tarih
+   ========================================= */
+
+.news-grid-small .card.card-small--split {
+  grid-column: 1 / -1; /* bir sırada tek kart */
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr); /* solda sabit görsel, sağda esnek metin */
+  column-gap: 18px;
+  padding: 14px 18px;
+  align-items: stretch; /* soldaki görsel ile kart yüksekliği aynı olsun */
+}
+
+/* Soldaki kare görsel alanı */
+.news-grid-small .card.card-small--split .card-media {
+  margin: 0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  height: 180px; /* görsel yüksekliği */
+}
+
+/* Slider sadece sol kolonda, tüm alanı kaplasın */
+.news-grid-small .card.card-small--split .slider {
+  margin: 0;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.news-grid-small .card.card-small--split .slider .slides,
+.news-grid-small .card.card-small--split .slider img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Slider noktaları görselin içinde, altta */
+.news-grid-small .card.card-small--split .slider-dots {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 8px;
+}
+
+/* Sağ sütun: .card-content içinde dikey ortalı */
+.news-grid-small .card.card-small--split .card-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* kategori+başlık+tarihi görselin ortasına yasla */
+}
+
+/* Sağ taraftaki tipografi */
+.news-grid-small .card.card-small--split .card-tag {
+  margin: 0 0 6px 0;
+}
+
+.news-grid-small .card.card-small--split .card-title {
+  margin: 0 0 4px 0;
+  font-size: 18px;
+  line-height: 1.3;
+}
+
+.news-grid-small .card.card-small--split .card-meta {
+  margin: 0;
+  font-size: 12px;
+}
+
+/* Split kartta özet ve buton zaten HTML'de yok;
+   olsa bile görünmesin diye: */
+.news-grid-small .card.card-small--split .card-text,
+.news-grid-small .card.card-small--split .card-link {
+  display: none !important;
+}
+
+/* Mini kart */
+.news-grid-small .card.card-small--mini {
+  padding: 10px 12px 12px;
+}
+.news-grid-small .card.card-small--mini .slider .slides,
+.news-grid-small .card.card-small--mini .slider img {
+  height: 100px;
+}
+.news-grid-small .card.card-small--mini .card-title {
+  font-size: 15px;
+}
+.news-grid-small .card.card-small--mini .card-text {
+  display: none;
+}
+
+/* Banner kart */
+.news-grid-small .card.card-small--banner {
+  grid-column: span 2;
+}
+.news-grid-small .card.card-small--banner .slider .slides,
+.news-grid-small .card.card-small--banner .slider img {
+  height: 180px;
+}
+.news-grid-small .card.card-small--banner .card-text {
+  display: none;
+}
+
+/* Highlight kart */
 .news-grid-small .card.card-small--highlight {
   background: radial-gradient(
     circle at top left,
@@ -319,63 +440,46 @@ body {
   border-color: rgba(199, 154, 84, 0.35);
 }
 
-/* Daha kompakt mod istediğinde (özet yok) */
-.news-grid-small .card.card-small--compact .card-text {
-  display: none;
-}
-
-.news-grid-small .card.card-small--compact .card-title {
-  font-size: 16px;
-}
-
-/* =========================
-   Kart iç tipografi
-   ========================= */
-
+/* Genel tipografi */
 .card-tag {
   display: inline-flex;
   align-items: center;
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.16em;
-  padding: 3px 9px;
+  padding: 3px 10px;
   border-radius: var(--radius-pill);
   background: var(--color-accent-soft);
   color: var(--color-accent-dark);
   font-weight: 700;
-  margin-bottom: 6px; /* altına nefes alan boşluk */
+  margin-bottom: 6px;
 }
-
 .card-title {
   margin: 4px 0 0;
   font-size: 18px;
   line-height: 1.3;
   font-family: var(--font-heading);
 }
-
 .card-meta {
   font-size: 12px;
   color: var(--color-text-soft);
 }
-
 .card-text {
   font-size: 14px;
   line-height: 1.6;
   color: var(--color-text-muted);
 }
 
-/* Kaynak satırı */
-.card-meta-source {
-  font-size: 11px;
-  color: var(--color-text-soft);
+/* Kaynak satırı liste görünümünde gizli */
+.news-grid-small .card .card-meta-source {
+  display: none;
 }
 
 /* =========================
-   Haberi Oku butonu
+   Haberi Oku butonu (genel)
    ========================= */
-
 .card-link {
-  margin-top: auto; /* kartın dibine yapıştır */
+  margin-top: auto;
   align-self: flex-start;
   font-size: 13px;
   text-decoration: none;
@@ -386,7 +490,6 @@ body {
   background: var(--color-bg-muted);
   transition: background 0.15s ease, transform 0.08s ease, box-shadow 0.15s ease;
 }
-
 .card-link:hover {
   background: var(--color-accent);
   color: var(--color-accent-contrast);
@@ -394,7 +497,10 @@ body {
   transform: translateY(-1px);
 }
 
-/* slider */
+/* =========================
+   SLIDER
+   ========================= */
+
 .slider {
   position: relative;
   overflow: hidden;
@@ -405,21 +511,9 @@ body {
   margin: -16px -18px 12px;
 }
 .news-grid-small .card .slider {
-  margin: -16px -18px 10px;
+  margin: -14px -16px 10px;
 }
-.card-featured .slider .slides {
-  width: 100%;
-  aspect-ratio: 16/9;
-}
-.card-featured .slider img {
-  width: 100%;
-  aspect-ratio: 16/9;
-  object-fit: cover;
-}
-.news-grid-small .slider .slides,
-.news-grid-small .slider img {
-  height: 200px;
-}
+
 .slider .slides {
   position: relative;
   width: 100%;
@@ -436,6 +530,25 @@ body {
 .slider img.active {
   opacity: 1;
 }
+
+/* Manşet slider oranı */
+.card-featured .slider .slides {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+}
+.card-featured .slider img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+/* Küçük kart slider genel yüksekliği (split hariç) */
+.news-grid-small .slider .slides,
+.news-grid-small .slider img {
+  height: 200px;
+}
+
+/* Slider butonları */
 .slider-btn {
   position: absolute;
   top: 50%;
@@ -459,6 +572,8 @@ body {
 .slider-btn.next {
   right: 10px;
 }
+
+/* Slider noktaları */
 .slider-dots {
   position: relative;
   bottom: auto;
@@ -482,20 +597,28 @@ body {
   border-color: var(--color-accent);
   opacity: 1;
 }
+
 .slider-caption {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 10px;
-  padding: 4px 10px;
+  bottom: 6px;
+  padding: 2px 8px;
   text-align: right;
-  font-size: 11px;
+  font-size: 10px;
   color: var(--color-text);
-  z-index: 5;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+  pointer-events: auto;
 }
-.slider-caption .footer-bottom {
-  text-align: inherit;
+.slider-caption .footer-link {
+  display: inline-block;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
+/* footer linkleri */
 .footer-link {
   color: inherit;
   text-decoration: none;
@@ -1178,11 +1301,10 @@ body {
   position: fixed;
   inset: 0;
   display: none;
-  /* align-items: center;  eskisi */
-  align-items: center; /* üstten başlayarak hizala */
+  align-items: center;
   justify-content: center;
   z-index: 120;
-  padding-top: 64px; /* header ile modal arasında boşluk */
+  padding-top: 64px;
 }
 .event-modal--visible {
   display: flex;
@@ -1294,6 +1416,9 @@ body {
   .news-grid-small .card-small--wide {
     grid-column: span 1;
   }
+  .news-grid-small .card-small--banner {
+    grid-column: span 1;
+  }
 }
 @media (max-width: 640px) {
   .top-bar {
@@ -1305,26 +1430,24 @@ body {
   }
 }
 
+/* Makale detay sayfası */
 .article-card .card-title {
   font-size: 24px;
   line-height: 1.3;
 }
-
 .article-body {
   margin-top: 12px;
   font-size: 15px;
   line-height: 1.8;
   color: var(--color-text-muted);
 }
-/* Haber detay sayfası slider yüksekliği */
 .article-card .card-media.slider .slides {
   width: 100%;
-  aspect-ratio: 16/9;
+  aspect-ratio: 16 / 9;
 }
-
 .article-card .card-media.slider img {
   width: 100%;
-  aspect-ratio: 16/9;
+  aspect-ratio: 16 / 9;
   object-fit: cover;
 }
 .article-body p {
