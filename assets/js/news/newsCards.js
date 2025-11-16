@@ -366,7 +366,7 @@ export function renderSmallNews(items, options = {}) {
         <p class="card-meta">${formatDate(news.createdAt)}</p>
         <p class="card-text">${escapeHtml(news.summary || "")}</p>
         <div class="card-footer-row">
-          <a class="card-link" href="${detailUrl}">Haberi Oku</a>
+          <a class="card-link" href="${detailUrl}">Oku</a>
           <span class="card-inline-tags">
             ${buildInlineTagsHtml(news.tags)}
           </span>
