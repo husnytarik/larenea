@@ -392,11 +392,21 @@ function setupNewsSearch() {
     }
 
     // 🔹 Arama VARSA → manşeti gizle, sadece split sonuçları göster
+    // 🔹 Arama VARSA → manşeti gizle, sadece split sonuçları göster
     const filtered = visibleAll.filter((n) => {
+      const title = (n.title || "").toLowerCase();
+      const summary = (n.summary || "").toLowerCase();
+      const category = (n.category || "").toLowerCase();
+
+      // tags alanını da stringe çevirip aramada kullan
+      const tagsArray = Array.isArray(n.tags) ? n.tags : [];
+      const tagsText = tagsArray.join(" ").toLowerCase();
+
       return (
-        (n.title || "").toLowerCase().includes(text) ||
-        (n.summary || "").toLowerCase().includes(text) ||
-        (n.category || "").toLowerCase().includes(text)
+        title.includes(text) ||
+        summary.includes(text) ||
+        category.includes(text) ||
+        tagsText.includes(text) // 👈 ETİKETLER DE DAHİL
       );
     });
 

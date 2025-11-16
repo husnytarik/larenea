@@ -1,0 +1,71 @@
+<!-- categories.html -->
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Larenea | Kategoriler</title>
+    <link rel="stylesheet" href="assets/css/main.css" />
+  </head>
+
+  <body>
+    <header class="site-header">
+      <div class="top-bar">
+        <div class="logo">
+          <span class="logo-main">Larenea</span>
+          <span class="logo-sub">Arkeoloji Haberleri</span>
+        </div>
+        <nav class="main-nav">
+          <a href="home.html">Ana Sayfa</a>
+          <a href="event.html">Etkinlikler</a>
+          <a href="categories.html" class="active">Kategoriler</a>
+        </nav>
+      </div>
+
+      <!-- İstersen burada ticker’ı da gösterebilirsin, şimdilik boş bırakıyorum -->
+    </header>
+
+    <main class="site-main">
+      <div class="layout-grid">
+        <!-- SOL: Seçilen kategoriye ait haberler -->
+        <section class="card">
+          <h1 id="category-page-title">Kategoriler</h1>
+          <p id="category-page-subtitle" class="card-text">
+            Bir kategori seçerek bu kategoriye ait haberleri görebilirsiniz.
+          </p>
+
+          <div class="news-grid-small">
+            <p>Haberler yükleniyor...</p>
+          </div>
+        </section>
+
+        <!-- SAĞ: Kategori listesi -->
+        <aside class="sidebar">
+          <div class="sidebar-block">
+            <h3 class="sidebar-title">Kategoriler</h3>
+            <div id="category-list" class="category-pills">
+              <!-- JS dolduracak -->
+            </div>
+          </div>
+        </aside>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-columns">
+        <div>
+          <h4>Larenea</h4>
+          <div>Arkeoloji haberleri, etkinlikler ve kaynaklar.</div>
+        </div>
+        <div>
+          <div>
+            İletişim: <a href="mailto:info@larenea.com">info@larenea.com</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">© Larenea</div>
+    </footer>
+
+    <script type="module" src="assets/js/news/categoriesPage.js"></script>
+  </body>
+</html>

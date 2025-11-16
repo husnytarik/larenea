@@ -295,6 +295,12 @@ export function renderSmallNews(items, options = {}) {
 
     const detailUrl = `haber.html?id=${news.id}`;
 
+    const categoryLabelRaw = news.category || "Haber";
+    const categoryLabelEscaped = escapeHtml(categoryLabelRaw);
+    const categoryLinkHref = `categories.html?category=${encodeURIComponent(
+      categoryLabelRaw
+    )}`;
+
     let mediaHtml = "";
     if (images.length > 0) {
       card.classList.add("has-media");
@@ -339,21 +345,28 @@ export function renderSmallNews(items, options = {}) {
       card.innerHTML = `
         ${mediaHtml}
         <div class="card-content">
-          <div class="card-tag">${escapeHtml(news.category || "Haber")}</div>
+          <div class="card-tag">
+            <a href="${categoryLinkHref}" class="card-tag-link">
+              ${categoryLabelEscaped}
+            </a>
+          </div>
           <h4 class="card-title">${escapeHtml(news.title || "")}</h4>
           <p class="card-meta">${formatDate(news.createdAt)}</p>
         </div>
       `;
     } else {
-      // Diğer kart tipleri eski davranış (Haberi Oku vs)
       card.innerHTML = `
         ${mediaHtml}
-        <div class="card-tag">${escapeHtml(news.category || "Haber")}</div>
+        <div class="card-tag">
+          <a href="${categoryLinkHref}" class="card-tag-link">
+            ${categoryLabelEscaped}
+          </a>
+        </div>
         <h4 class="card-title">${escapeHtml(news.title || "")}</h4>
         <p class="card-meta">${formatDate(news.createdAt)}</p>
         <p class="card-text">${escapeHtml(news.summary || "")}</p>
         <div class="card-footer-row">
-          <a href="${detailUrl}" class="card-link">Oku</a>
+          <a class="card-link" href="${detailUrl}">Haberi Oku</a>
           <span class="card-inline-tags">
             ${buildInlineTagsHtml(news.tags)}
           </span>
