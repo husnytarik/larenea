@@ -51,6 +51,59 @@
   --shadow-strong: 0 16px 40px rgba(0, 0, 0, 0.65);
 }
 
+:root {
+  /* Fontlar */
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  --font-serif: "Georgia", "Times New Roman", serif;
+  --font-logo: var(--font-serif);
+  --font-heading: var(--font-serif);
+  --font-event-title: var(--font-sans);
+  --font-event-meta: var(--font-sans);
+
+  /* Arka planlar (siyah–gri) */
+  --color-bg: #111; /* ana siyah */
+  --color-bg-alt: #181818; /* biraz açık siyah */
+  --color-bg-muted: #222222cc; /* hafif transparan gri */
+  --color-bg-dark: #0a0a0a; /* en koyu */
+  --color-bg-radial: rgba(255, 255, 255, 0.04);
+  --color-header-bg: rgba(10, 10, 10, 0.9);
+
+  /* Metin & link (beyaz–gri) */
+  --color-text: #f2f2f2; /* ana metin */
+  --color-text-muted: #c2c2c2; /* soluk gri */
+  --color-text-soft: #9e9e9e; /* daha yumuşak gri */
+  --color-link: #e0e0e0; /* link – açık gri */
+  --color-link-hover: #ffffff; /* hover – beyaza yakın */
+
+  /* Kenarlıklar */
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-strong: rgba(255, 255, 255, 0.2);
+
+  /* Vurgu (tek renk tüm griler) */
+  --color-accent: #bfbfbf; /* ana vurgu – açık gri */
+  --color-accent-dark: #8a8a8a; /* koyu vurgu */
+  --color-accent-soft: rgba(200, 200, 200, 0.18);
+  --color-accent-contrast: #111; /* siyah */
+
+  /* Ticker */
+  --color-ticker-bg: rgba(0, 0, 0, 0.92);
+  --color-ticker-border: rgba(255, 255, 255, 0.08);
+  --color-ticker-text: #e6e6e6;
+  --color-ticker-label-bg: rgba(255, 255, 255, 0.08);
+  --color-ticker-label-border: rgba(255, 255, 255, 0.25);
+
+  /* Radius & shadow */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+
+  --shadow-soft: 0 10px 26px rgba(0, 0, 0, 0.45);
+  --shadow-medium: 0 14px 34px rgba(0, 0, 0, 0.55);
+  --shadow-strong: 0 16px 40px rgba(0, 0, 0, 0.7);
+}
+
 /* Reset & body */
 *,
 *::before,
