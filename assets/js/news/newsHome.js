@@ -74,9 +74,15 @@ async function loadNews() {
     return;
   }
 
-  // 7) Manşet + diğer haberler (tag varsa filtrelenmiş hali)
-  renderFeaturedCard(list[0]);
-  renderSmallNews(list.slice(1));
+  // 7) Manşet kartını kullanma, tüm haberleri aynı grid'de göster
+  const featuredCard = document.querySelector(".card-featured");
+  if (featuredCard) {
+    featuredCard.style.display = "none"; // manşet alanını gizle
+  }
+
+  // Kart tipi / format sistemi (vertical, split, mini, banner) aynen devam ediyor;
+  // sadece ilk haber artık ayrı bir "manşet" görünümünde değil.
+  renderSmallNews(list);
 
   // 8) Ticker tüm görünür haberlerden devam etsin
   loadNewsTicker(visible);
@@ -366,21 +372,22 @@ function setupNewsSearch() {
     // Sadece görünür kayıtlar üzerinden çalışalım
     const visibleAll = NEWS_CACHE.filter(isRecordVisible);
 
-    // 🔹 Arama YOKSA → eski layout'a dön
+    // 🔹 Arama YOKSA → TÜM görünür haberleri tek grid'de göster
     if (!hasQuery) {
       if (!visibleAll.length) {
         grid.innerHTML =
           "<p style='padding:12px;opacity:.7;'>Haber bulunamadı.</p>";
-        featuredCard.style.display = "none";
+        if (featuredCard) featuredCard.style.display = "none";
         return;
       }
 
-      // Manşet tekrar görünsün
-      featuredCard.style.display = "";
+      // Manşet alanını tamamen gizle
+      if (featuredCard) {
+        featuredCard.style.display = "none";
+      }
 
-      // Klasik düzen: manşet + küçük kartlar (karışık tip)
-      renderFeaturedCard(visibleAll[0]);
-      renderSmallNews(visibleAll.slice(1));
+      // Bütün görünür haberler, seçtiğin kart tipleriyle grid'de
+      renderSmallNews(visibleAll);
       return;
     }
 

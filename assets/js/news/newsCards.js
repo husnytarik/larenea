@@ -244,7 +244,7 @@ export function renderFeaturedCard(news) {
 
   if (linkEl) {
     linkEl.href = `haber.html?id=${news.id}`;
-    linkEl.textContent = "Haberi Oku";
+    linkEl.textContent = "Oku";
 
     const inline = buildInlineTagsHtml(news.tags);
     if (inline) {
@@ -353,7 +353,7 @@ export function renderSmallNews(items, options = {}) {
         <p class="card-meta">${formatDate(news.createdAt)}</p>
         <p class="card-text">${escapeHtml(news.summary || "")}</p>
         <div class="card-footer-row">
-          <a href="${detailUrl}" class="card-link">Haberi Oku</a>
+          <a href="${detailUrl}" class="card-link">Oku</a>
           <span class="card-inline-tags">
             ${buildInlineTagsHtml(news.tags)}
           </span>
