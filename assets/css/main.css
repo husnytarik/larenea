@@ -1758,3 +1758,15 @@ body::before {
 .card-tag a.card-tag-link:hover {
   text-decoration: underline;
 }
+@media (max-width: 768px) {
+  .layout-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .layout-grid .sidebar {
+    order: -1; /* Kategoriler alanı en üste çıkar */
+    width: 100%;
+  }
+}
