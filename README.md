@@ -1,76 +1,6 @@
 # 🏛️ Larenea Archaeology News
 
-## TR
-
-**Larenea Archaeology News**, arkeoloji temalı haber ve etkinliklerin
-yönetilebildiği, yayınlanabildiği ve konum tabanlı olarak harita
-üzerinde görüntülenebildiği web tabanlı bir dijital gazete platformudur.
-
-Platform tamamen geliştirilmiş ve aktif olarak yayındadır.\
-Frontend tarafı **HTML, CSS ve Vanilla JavaScript** ile geliştirilmiş
-olup, backend altyapısı olarak **Firebase** kullanılmaktadır.\
-Harita altyapısı için **Leaflet.js** kullanılmıştır.
-
-### 🚀 Proje Amacı
-
-Bu proje, arkeolojik içeriklerin dijital ortamda düzenli ve
-sürdürülebilir şekilde yayınlanmasını amaçlamaktadır.
-
-Platform: - Arkeolojik kazılar\
-- Yeni keşifler\
-- Akademik çalışmalar\
-- Kültürel miras etkinlikleri
-
-gibi içeriklerin merkezi bir sistem üzerinden yönetilmesini sağlar.
-
-Aynı zamanda kullanıcıların içerikleri filtreleyebileceği, arama
-yapabileceği ve bulunduğu konuma göre etkinlikleri keşfedebileceği
-modern bir deneyim sunar.
-
-### 🛠️ Admin Paneli Özellikleri
-
-#### 📰 Haber Yönetimi
-
--   Yeni haber oluşturma\
--   Başlık ve detaylı içerik ekleme\
--   Kategori seçimi\
--   "Öne Çıkan" (Featured) işaretleme\
--   Görsel yükleme (Firebase Storage)\
--   Kaynak / referans bilgisi ekleme\
--   Verilerin Firebase Firestore'a kaydedilmesi
-
-#### 📍 Etkinlik Yönetimi
-
--   Yeni etkinlik oluşturma\
--   Etkinlik açıklaması ekleme\
--   Tarih ve detay bilgisi girme\
--   Enlem / boylam (latitude / longitude) girme\
--   Harita üzerinden konum doğrulama (Leaflet)\
--   Etkinlik verilerini Firebase'e kaydetme
-
-### 🌍 Kullanıcı Arayüzü
-
-Kullanıcılar: - Tüm haberleri liste halinde görüntüleyebilir\
-- Haberler arasında arama yapabilir\
-- Kategoriye göre filtreleme yapabilir\
-- Her haberi ayrı bir detay sayfasında okuyabilir\
-- Etkinlikleri harita üzerinde inceleyebilir
-
-### 📍 Konum Tabanlı Etkinlik Sistemi
-
--   Etkinlikler Leaflet haritası üzerinde marker olarak gösterilir\
--   Kullanıcı konumu (izin verilmesi halinde) alınabilir\
--   Kullanıcıya yakın etkinlikler otomatik olarak hesaplanır\
--   Yakındaki etkinlikler ayrıca vurgulanır\
--   Mesafe bazlı dinamik sıralama yapılabilir
-
-### 🗄️ Backend
-
--   Firebase Firestore\
--   Firebase Storage\
--   Firebase Authentication
-
-------------------------------------------------------------------------
+https://husnytarik.github.io/larenea/home.html
 
 ## EN
 
@@ -144,3 +74,80 @@ Users can: - View all published news\
 Larenea Archaeology News is a modern, dynamic, and location-aware
 digital publishing platform designed specifically for
 archaeology-focused content.
+
+
+------------------------------------------------------------------------
+
+
+## TR
+
+**Larenea Archaeology News**, arkeoloji temalı haber ve etkinliklerin
+yönetilebildiği, yayınlanabildiği ve konum tabanlı olarak harita
+üzerinde görüntülenebildiği web tabanlı bir dijital gazete platformudur.
+
+Platform tamamen geliştirilmiş ve aktif olarak yayındadır.\
+Frontend tarafı **HTML, CSS ve Vanilla JavaScript** ile geliştirilmiş
+olup, backend altyapısı olarak **Firebase** kullanılmaktadır.\
+Harita altyapısı için **Leaflet.js** kullanılmıştır.
+
+### 🚀 Proje Amacı
+
+Bu proje, arkeolojik içeriklerin dijital ortamda düzenli ve
+sürdürülebilir şekilde yayınlanmasını amaçlamaktadır.
+
+Platform: - Arkeolojik kazılar\
+- Yeni keşifler\
+- Akademik çalışmalar\
+- Kültürel miras etkinlikleri
+
+gibi içeriklerin merkezi bir sistem üzerinden yönetilmesini sağlar.
+
+Aynı zamanda kullanıcıların içerikleri filtreleyebileceği, arama
+yapabileceği ve bulunduğu konuma göre etkinlikleri keşfedebileceği
+modern bir deneyim sunar.
+
+### 🛠️ Admin Paneli Özellikleri
+
+#### 📰 Haber Yönetimi
+
+-   Yeni haber oluşturma\
+-   Başlık ve detaylı içerik ekleme\
+-   Kategori seçimi\
+-   "Öne Çıkan" (Featured) işaretleme\
+-   Görsel yükleme (Firebase Storage)\
+-   Kaynak / referans bilgisi ekleme\
+-   Verilerin Firebase Firestore'a kaydedilmesi
+
+#### 📍 Etkinlik Yönetimi
+
+-   Yeni etkinlik oluşturma\
+-   Etkinlik açıklaması ekleme\
+-   Tarih ve detay bilgisi girme\
+-   Enlem / boylam (latitude / longitude) girme\
+-   Harita üzerinden konum doğrulama (Leaflet)\
+-   Etkinlik verilerini Firebase'e kaydetme
+
+### 🌍 Kullanıcı Arayüzü
+
+Kullanıcılar: - Tüm haberleri liste halinde görüntüleyebilir\
+- Haberler arasında arama yapabilir\
+- Kategoriye göre filtreleme yapabilir\
+- Her haberi ayrı bir detay sayfasında okuyabilir\
+- Etkinlikleri harita üzerinde inceleyebilir
+
+### 📍 Konum Tabanlı Etkinlik Sistemi
+
+-   Etkinlikler Leaflet haritası üzerinde marker olarak gösterilir\
+-   Kullanıcı konumu (izin verilmesi halinde) alınabilir\
+-   Kullanıcıya yakın etkinlikler otomatik olarak hesaplanır\
+-   Yakındaki etkinlikler ayrıca vurgulanır\
+-   Mesafe bazlı dinamik sıralama yapılabilir
+
+### 🗄️ Backend
+
+-   Firebase Firestore\
+-   Firebase Storage\
+-   Firebase Authentication
+
+------------------------------------------------------------------------
+
